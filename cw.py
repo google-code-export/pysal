@@ -1,5 +1,97 @@
-from pysal.cg import Triangle
 import random
+
+class Triangle:
+    """
+    Representation of a triangle. 
+    The representation is valuable for its numerical stability.
+
+    Attributes:
+    v1 -- a vertex of the triangle (number 2-tuple)
+    v2 -- a vertex of the triangle (number 2-tuple)
+    v3 -- a vertex of the triangle (number 2-tuple)
+    """
+
+    def __init__(self, v1, v2, v3):
+        """
+        Create a triangle with the specified vertices.
+
+        Test tag: <tc>#is#Triangle.__init__</tc>
+
+        __init__((number, number), (number, number), (number, number)) -> Triangle
+
+        Arguments:
+        v1 -- a vertex of the triangle
+        v2 -- a vertex of the triangle
+        v3 -- a vertex of the triangle
+
+        Example:
+        >>> t = Triangle(Point((0, 0)), Point((1, 0)), Point((0, 1)))
+        """
+        cross_prod = ((v2[0] - v1[0])*(v3[1] - v1[1]) - 
+                      (v2[1] - v1[1])*(v3[0] - v1[0]))
+        if cross_prod == 0:
+            raise ArithmeticError, 'Triangle vertices cannot be collinear.'
+        self.v1 = v1
+        self.v2 = v2
+        self.v3 = v3
+
+    @property
+    def cw(self):
+        """
+        Test tag: <tc>#is#Triangle.cw</tc>
+ 
+        Returns whether the vertices of the triangle are in clockwise order.
+
+        cw() -> bool
+
+        Example:
+        >>> Triangle(Point((0, 0)), Point((0, 1)), Point((1, 0))).cw
+        True
+        >>> Triangle(Point((0, 0)), Point((1, 0)), Point((0, 1))).cw
+        False
+        """
+        cross_prod = ((self.v2[0] - self.v1[0])*(self.v3[1] - self.v1[1]) -
+                      (self.v2[1] - self.v1[1])*(self.v3[0] - self.v1[0]))
+        if cross_prod > 0:
+            return False
+        else:
+            return True
+
+    def contains(self, pt):
+        """
+        Returns whether a location lies inside or outside the triangle.
+
+        Test tag: <tc>#is#Triangle.contains</tc>
+
+        contains(Point) -> bool
+
+        Arguments:
+        loc -- a location which lies inside or outside the triangle
+
+        Example:
+        >>> Triangle(Point((0, 0)), Point((1, 0)), Point((0, 1))).contains(Point((2, 2)))
+        False
+        >>> Triangle(Point((0, 0)), Point((1, 0)), Point((0, 1))).contains(Point((0.1, 0.1)))
+        True
+        """
+        if self.cw:
+            v1 = self.v1
+            v2 = self.v2
+            v3 = self.v3
+        else:
+            v1 = self.v1
+            v2 = self.v3
+            v3 = self.v2
+        tvec1 = (v2[0] - v1[0], v2[1] - v1[1])
+        tvec2 = (v3[0] - v2[0], v3[1] - v2[1])
+        tvec3 = (v1[0] - v3[0], v1[1] - v3[1])
+        lvec1 = (pt[0] - v1[0], pt[1] - v1[1])
+        lvec2 = (pt[0] - v2[0], pt[1] - v2[1])
+        lvec3 = (pt[0] - v3[0], pt[1] - v3[1])
+        cross_prod1 = lvec1[0]*tvec1[1] - lvec1[1]*tvec1[0]
+        cross_prod2 = lvec2[0]*tvec2[1] - lvec2[1]*tvec2[0]
+        cross_prod3 = lvec3[0]*tvec3[1] - lvec3[1]*tvec3[0]
+        return cross_prod1 > 0 and cross_prod2 > 0 and cross_prod3 > 0
 
 def collinear_pts(p1, p2, p3):
     return ((p2[0] - p1[0])*(p3[1] - p1[1]) - 
