@@ -1,4 +1,4 @@
-#Generating end-user documentation for PySAL using Sphinx
+Generating end-user documentation for PySAL using Sphinx
 
 = Introduction =
 
@@ -12,4 +12,25 @@ This guide gets developers going with Sphinx for documenting the PySAL modules w
 
 The main index for the documentation is in the file `doc/sources/index.rst`.
 Each module should have an entry in the `toctree` of this document. The description for a module
-gets entered in file `moduleName.rst` and this can be linked to the toctree in one of two ways:
+gets entered in file `moduleName.rst` and this can be linked to the toctree as
+follows:
+
+{{{
+
+.. toctree::
+   :maxdepth: 2
+
+   moduleName.rst
+
+}}}
+
+Alternatively, if you wanted a more descriptive entry in the html index:
+
+{{{
+
+.. toctree::
+   :maxdepth: 2
+
+   Descriptive Entry <moduleName.rst>
+
+}}}
