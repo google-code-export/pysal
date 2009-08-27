@@ -1,5 +1,5 @@
+#summary Generating end-user documentation for PySAL using Sphinx
 #labels Phase-Implementation
-Generating end-user documentation for PySAL using Sphinx
 
 = Introduction =
 
