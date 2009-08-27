@@ -1,0 +1,15 @@
+#Generating end-user documentation for PySAL using Sphinx
+
+= Introduction =
+
+[http://sphinx.pocoo.org/index.html Sphinx] is increasingly being used to generate user documentation for Python projects (including Python itself). We should adopt this for PySAL since it would allow us to easily bundle user docs with the source code.
+It relies on [http://docutils.sf.net/rst.html reStructuredText] for markup and has low startup costs.
+
+This guide gets developers going with Sphinx for documenting the PySAL modules we want end-users to interact with.
+
+
+= Details =
+
+The main index for the documentation is in the file `doc/sources/index.rst`.
+Each module should have an entry in the `toctree` of this document. The description for a module
+gets entered in file `moduleName.rst` and this can be linked to the toctree in one of two ways:
