@@ -38,6 +38,8 @@ Alternatively, if you wanted a more descriptive entry in the html index:
 
 }}}
 
+(Note that the `.rst` extension is not required in the toctree).
+
 == Building the docs ==
 
 Using [http://code.google.com/p/pysal/source/browse/trunk/doc/Makefile doc/Makefile] a `make html` will rebuild the html tree which lives in [http://code.google.com/p/pysal/source/browse/trunk/doc/build/html doc/build/html] Note that LaTeX can also be generated from the docs (as well as math markup in the documentation), using `make latex`.
