@@ -10,6 +10,8 @@ This guide gets developers going with Sphinx for documenting the PySAL modules w
 
 = Details =
 
+== Creating a module entry in the documentation index ==
+
 The main index for the documentation is in the file `doc/sources/index.rst`.
 Each module should have an entry in the `toctree` of this document. The description for a module
 gets entered in file `moduleName.rst` and this can be linked to the toctree as
@@ -34,3 +36,8 @@ Alternatively, if you wanted a more descriptive entry in the html index:
    Descriptive Entry <moduleName.rst>
 
 }}}
+
+== Building the docs ==
+
+Using `doc/Makefile' a `make html` will rebuild the html tree which lives in `build/html`.
+Note that LaTeX can also be generated from the docs (as well as math markup in the documentation).
