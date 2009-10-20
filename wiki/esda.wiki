@@ -1,0 +1,107 @@
+#summary An Overview of the esda module in PySAL
+#sidebar TableOfContents
+
+= Introduction =
+The module {{{esda}}} provides classes to perform Exploratory Spatial Data Analysis (ESDA) in PySAL.
+
+*NOTE* All the examples below assume you have loaded the example data into Python. Do it with the following code (assuming you are on the directory '/pysal/examples'):
+
+{{{
+>>> import numpy as N
+>>> import pysal
+# Read the weights matrix as W object
+>>> W=pysal.open('desmith.gal')._read()
+
+# Read data
+>>> y=pysal.open('desmith.txt')
+# Get the column 'z' of the table
+>>> y=y._get_col('z')
+# Make it a numpy array
+>>> y=N.array(y)
+}}}
+
+For more info on reading data into PySAL, see FileIO.
+
+= Classes =
+
+== Geary ==
+*{{{class Geary}}}*
+
+It computes Global Geary C autorcorrelation statistic.
+
+===Arguments===
+ * y: n`*`1 array
+ * w: weight instance assumed to be aligned with y
+ * transformation: weights transformation, default is row-standardized (`W`). Other options include:
+  * `B`: binary
+  * `D`: doubly-standardized
+  * `U`: untransformed (general weights)
+  * `V`: variance-stabilizing
+ * permutations: number of random permutations for calculation of
+pseudo-p_values
+
+===Attributes===
+ * y: original variable
+ * w: original w object
+ * permutation: number of permutations
+ * C: value of statistic
+ *EC: expected value
+ *VC: variance of G under normality assumption
+ *z_norm: z-statistic for C under normality assumption
+ *z_rand: z-statistic for C under randomization assumption
+ *p_norm: p-value under normality assumption (one-tailed)
+ *p_rand: p-value under randomization assumption (one-tailed)
+
+(if permutations>0)
+
+ *sim: vector of I values for permutated samples
+ *p_sim: p-value based on permutations
+ *EC_sim: average value of C from permutations
+ *VC_sim: variance of C from permutations
+ *seC_sim: standard deviation of C under permutations.
+ *z_sim: standardized C based on permutations
+ *p_z_sim: p-value based on standard normal approximation from
+permutations
+
+===References===
+ * Geary, R.C. (1954). [http://www.jstor.org/pss/2986645 The Contiguity Ratio and Statistical Mapping]. 5. The Incorporated Statistician. pp. 115–145
+ * Cliff, A. D., Ord, J. K. 1981 Spatial processes, Pion, p. 17
+ * [http://en.wikipedia.org/wiki/Geary%27s_C Wikipedia]
+
+===Example===
+{{{
+>>> from pysal.esda.geary import Geary
+>>> c=Geary(y,W)
+>>> c.C
+1.0306280397350873
+>>> c.EC
+1.0
+>>> c.z_norm
+0.12478140903940312
+>>> c.z_rand
+0.11778731158293086
+>>> c.p_norm
+0.39584849345282647
+>>> c.p_rand
+0.39618442415010757
+>>> c.p_sim
+0.41699999999999998
+>>> c.EC_sim
+0.99897710985735588
+>>> c.VC_sim
+0.060532146040864848
+>>> c.seC_sim
+0.24603281496756657
+>>> c.z_sim
+0.12864515606141336
+>>> c.p_z_sim
+0.39565473818765856
+>>> 
+}}}
+
+== Moran ==
+*{{{Moran}}}*
+
+*{{{Moran_BV}}}*
+
+*{{{Moran_Local}}}*
