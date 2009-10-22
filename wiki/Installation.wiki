@@ -1,0 +1,25 @@
+#labels Phase-Deploy
+How to install PySAL on various platforms.
+
+= Introduction =
+
+This article covers the installation of PySAL on Windows, Mac OS X and Linux. Before attempting to install PySAL please download and install all dependancies list below.
+
+= Dependancies =
+The following Python packages are required to run PySAL on any platform.
+ * NumPy: http://scipy.org/Download
+ * SciPy: http://scipy.org/Download
+ * spatialindex 1.3.0 (required by Rtree): http://trac.gispython.org/spatialindex
+ * Rtree: http://pypi.python.org/pypi/Rtree
+
+= Windows =
+== Binary Installer ==
+Download and install from, http://pysal.googlecode.com/files/pysal-0.1.win32-py2.5.exe
+
+= Mac OS X =
+== From Source ==
+Using SVN check out the "trunk" from the source tab.
+from the command line run...
+
+python setup.py build
+python setup.py install
