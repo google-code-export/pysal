@@ -4,7 +4,7 @@
 
 = Introduction =
 
-This article covers the installation of PySAL on Windows, Mac OS X and Linux. Before attempting to install PySAL please download and install all dependancies list below.
+This article covers the installation of PySAL on Windows, Mac OS X and Linux. Before attempting to install PySAL please download and install all dependancies list below.  Make sure you install everything for the same version of python.  (We have installers for windows for python 2.5 and 2.6).
 
 = Dependancies =
 The following Python packages are required to run PySAL on any platform.
@@ -15,7 +15,7 @@ The following Python packages are required to run PySAL on any platform.
 
 = Windows =
 == Binary Installer ==
-Download and install from, http://pysal.googlecode.com/files/pysal-0.1.win32-py2.5.exe
+Download and install from, http://code.google.com/p/pysal/downloads/list
 
 = Mac OS X =
 == From Source ==
