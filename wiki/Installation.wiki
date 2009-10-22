@@ -1,5 +1,5 @@
 #summary How to install PySAL on various platforms.
-#labels Phase-Deploy
+#labels Phase-Deploy,Featured
 #sidebar TableOfContents
 
 = Introduction =
