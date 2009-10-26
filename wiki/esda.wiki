@@ -4,7 +4,10 @@
 = Introduction =
 The module {{{esda}}} provides classes to perform Exploratory Spatial Data Analysis (ESDA) in PySAL.
 
-*NOTE* All the examples below assume you have loaded the example data into Python. Do it with the following code (assuming you are on the directory '/pysal/examples'):
+*NOTE* All the examples below assume you have loaded some data into Python. You can use some of the data in the examples folder ('/pysal/examples'). To load them, first go to the folder:
+{{{cd /path_to_pysal_trunk/pysal/examples}}}
+
+Unless explicitly noted, we will use the 'desmith' data. You can load them by copying and pasting the following:
 
 {{{
 >>> import numpy as N
@@ -25,9 +28,14 @@ For more info on reading data into PySAL, see FileIO.
 = Classes =
 
 == Geary ==
-*{{{class Geary}}}*
+==*{{{class Geary}}}*==
 
-It computes Global Geary C autorcorrelation statistic.
+Computation of Global Geary C autorcorrelation statistic.
+
+===References===
+ * Geary, R.C. (1954). [http://www.jstor.org/pss/2986645 The Contiguity Ratio and Statistical Mapping]. 5. The Incorporated Statistician. pp. 115–145
+ * Cliff, A. D., Ord, J. K. 1981 Spatial processes, Pion, p. 17
+ * [http://en.wikipedia.org/wiki/Geary%27s_C Wikipedia]
 
 ===Arguments===
  * y: n`*`1 array
@@ -37,8 +45,7 @@ It computes Global Geary C autorcorrelation statistic.
   * `D`: doubly-standardized
   * `U`: untransformed (general weights)
   * `V`: variance-stabilizing
- * permutations: number of random permutations for calculation of
-pseudo-p_values
+ * permutations: number of random permutations for calculation of pseudo-p_values (by default set to 999).
 
 ===Attributes===
  * y: original variable
@@ -60,18 +67,14 @@ pseudo-p_values
  *VC_sim: variance of C from permutations
  *seC_sim: standard deviation of C under permutations.
  *z_sim: standardized C based on permutations
- *p_z_sim: p-value based on standard normal approximation from
-permutations
-
-===References===
- * Geary, R.C. (1954). [http://www.jstor.org/pss/2986645 The Contiguity Ratio and Statistical Mapping]. 5. The Incorporated Statistician. pp. 115–145
- * Cliff, A. D., Ord, J. K. 1981 Spatial processes, Pion, p. 17
- * [http://en.wikipedia.org/wiki/Geary%27s_C Wikipedia]
+ *p_z_sim: p-value based on standard normal approximation from permutations
 
 ===Example===
 {{{
 >>> from pysal.esda.geary import Geary
 >>> c=Geary(y,W)
+>>> c
+<pysal.esda.geary.Geary instance at 0x22a9cd8>
 >>> c.C
 1.0306280397350873
 >>> c.EC
@@ -100,8 +103,228 @@ permutations
 }}}
 
 == Moran ==
-*{{{Moran}}}*
+==*{{{class Moran}}}*==
 
-*{{{Moran_BV}}}*
+Computation of the global version of the Moran's I statistic for spatial autocorrelation.
 
-*{{{Moran_Local}}}*
+===References===
+ * Moran, P.A.P. (1948). The interpretation of statistical maps. Journal of the Royal Statistical Society. Series B (Methodological). pp. 243-251.
+ * [http://en.wikipedia.org/wiki/Moran's_I Wikipedia]
+ 
+===Arguments===
+ * y: n`*`1 array
+ * w: weight instance assumed to be aligned with y
+ * transformation: weights transformation, default is row-standardized (`W`). Other options include:
+  * `B`: binary
+  * `D`: doubly-standardized
+  * `U`: untransformed (general weights)
+  * `V`: variance-stabilizing
+ * permutations: number of random permutations for calculation of pseudo-p_values (by default set to 999)
+
+===Attributes===
+ * y: original variable
+ * w: original w object
+ * permutation: number of permutations
+ * I: value of statistic
+ *EI: expected value
+ *VI_norm: variance of I under normality assumption
+ *seI_norm: standard deviation of I under normality assumption
+ *z_norm: z-statistic for I under normality assumption
+ *p_norm: p-value of I under normality assumption (1-tailed)
+ *VI_rand: variance of I under randomization assumption
+ *seI_rand: standard deviation of I under randomization assumption
+ *z_rand: z-statistic for I under randomization assumption
+ *p_rand: p-value under randomization assumption (one-tailed)
+
+(if permutations>0)
+
+ *sim: vector of I values for permutated samples
+ *p_sim: p-value based on permutations
+ *EI_sim: average value of I from permutations
+ *VI_sim: variance of I from permutations
+ *seI_sim: standard deviation of I under permutations.
+ *z_sim: standardized I based on permutations
+ *p_z_sim: p-value based on standard normal approximation from permutations
+
+===Example===
+{{{
+>>> from pysal.esda.moran import Moran
+>>> I=Moran(y,W)
+>>> I
+<pysal.esda.moran.Moran instance at 0x22a9968>
+>>> I.I
+0.073612431110602214
+>>> I.EI
+-0.1111111111111111
+>>> I.VI_norm
+0.057491582491582496
+>>> I.seI_norm
+0.23977402380487861
+>>> I.z_norm
+0.77040681592780114
+>>> I.p_norm
+0.29650183721625545
+>>> I.VI_rand
+0.029046956609752865
+>>> I.seI_rand
+0.17043167724854691
+>>> I.z_rand
+1.0838568580905537
+>>> I.p_rand
+0.22172633614104503
+>>> I.p_sim
+0.35899999999999999
+>>> I.EI_sim
+0.0073148505013345896
+>>> I.VI_sim
+0.028895203917500886
+>>> I.seI_sim
+0.16998589328971062
+>>> I.z_sim
+0.39001813224745208
+>>> I.p_z_sim
+0.36972506950229339
+>>> 
+}}}
+
+
+==*{{{class Moran_BV}}}*==
+
+Computation of bivariate version of Moran's I global statistic of spatial autocorrelation.
+
+===References===
+ * Anselin, L. (2005). [http://www.csiss.org/clearinghouse/GeoDa/geodaworkbook.pdf Exploring Spatial Data with GeoDa: A Workbook]. Center for Spatially Integrated Social Science. See section 21 (from page 155 on).
+
+===Arguments===
+ * y1: n`*`1 array with the variable to be used as main one
+ * y2: n`*`1 array with the variable to be spatially lagged
+ * w: weight instance assumed to be aligned with y
+ * transformation: weights transformation, default is row-standardized (`W`). Other options include:
+  * `B`: binary
+  * `D`: doubly-standardized
+  * `U`: untransformed (general weights)
+  * `V`: variance-stabilizing
+ * permutations: number of random permutations for calculation of pseudo-p_values (by default set to 999)
+
+===Attributes===
+ * y: original variable
+ * w: original w object
+ * permutation: number of permutations
+ * I: value of Moran's I
+
+(if permutations>0)
+
+ *sim: vector of I values for permutated samples
+ *p_sim: p-value based on permutations
+ *EI_sim: average value of I from permutations
+ *VI_sim: variance of I from permutations
+ *seI_sim: standard deviation of I under permutations.
+ *z_sim: standardized I based on permutations
+ *p_z_sim: p-value based on standard normal approximation from permutations
+
+*NOTE* Inference is only based on permutations as analytical results are none too reliable.
+
+===Example===
+
+In this case, we will use the data from `stl_hom.csv`.
+
+{{{
+>>>dat=pysal.open('stl_hom.csv')
+>>>y1=dat._get_col('HR7984')
+>>>y1=N.array(y1)
+>>>
+>>>y2=dat._get_col('HR8488')
+>>>y2=N.array(y2)
+>>>
+>>>W=pysal.open('stl.gal').read()
+}}}
+
+Once the data are loaded, you can obtain the bivariate moran as follows:
+
+{{{
+>>>from pysal.esda.moran import Moran_BV
+>>> mbv=Moran_BV(y1,y2,W)
+>>> mbv
+<pysal.esda.moran.Moran_BV instance at 0x219b288>
+>>> mbv.I
+0.90800739921986295
+>>> mbv.p_sim
+0.0089999999999999993
+>>> mbv.EI_sim
+0.010925497047910789
+>>> mbv.VI_sim
+0.062796961073566859
+>>> mbv.seI_sim
+0.25059321833115689
+>>> mbv.z_sim
+3.5798331181750727
+>>> mbv.p_z_sim
+0.00065784507006177366
+>>> 
+}}}
+
+==*{{{class Moran_Local}}}*==
+
+Computes local version of Moran's I, which is a Local Indicator of Spatial Association (LISA).
+
+===References===
+ * Anselin, L. (1995). Local Indicators of Spatial Association-LISA. Geographical Analysis, Vol. 27, Number 2, pp. 93-115
+ * [http://en.wikipedia.org/wiki/Indicators_of_spatial_association Wikipedia]
+
+===Arguments===
+ * y: n`*`1 array
+ * w: weight instance assumed to be aligned with y
+ * transformation: weights transformation, default is row-standardized (`W`). Other options include:
+  * `B`: binary
+  * `D`: doubly-standardized
+  * `U`: untransformed (general weights)
+  * `V`: variance-stabilizing
+ * permutations: number of random permutations for calculation of pseudo-p_values (by default set to 999)
+
+===Attributes===
+ * y: original variable
+ * w: original w object
+ * permutation: number of permutations
+ * Is: values of Moran's I
+ * q: array of values indicated quadrat location: 1 HH, 2 LH, 3 LL, 4 HL
+
+(if permutations>0)
+
+ *sim: vector of I values for permutated samples
+ *p_sim: p-value based on permutations
+ *EI_sim: average value of I from permutations
+ *VI_sim: variance of I from permutations
+ *seI_sim: standard deviation of I under permutations.
+ *z_sim: standardized I based on permutations
+ *p_z_sim: p-value based on standard normal approximation from permutations
+
+*NOTE* p-values are one sided - where side is based on the original I value for each observation (in self.Is). In other words extreme is considered being further away from the origin and in the same direction than original I statistic  for the focal observation.
+
+===Example===
+{{{
+>>> from pysal.esda.moran import Moran_Local
+>>> Is=Moran_Local(y,W)
+>>> Is
+<pysal.esda.moran.Moran_Local instance at 0x22a9d50>
+>>> Is.Is
+array([-0.11409277, -0.19940543, -0.13351408, -0.51770383,  0.48095009,
+        0.12208113,  1.19148298, -0.58144305,  0.07101383,  0.34314301])
+>>> Is.q
+array([4, 4, 4, 2, 3, 3, 1, 4, 3, 3])
+>>> Is.p_sim
+array([ 0.269,  0.249,  0.454,  0.162,  0.152,  0.067,  0.052,  0.246,
+        0.426,  0.271])
+>>> Is.EI_sim
+0.0043962065246146136
+>>> Is.VI_sim
+0.22196455856433647
+>>> Is.seI_sim
+0.47113114794538524
+>>> Is.z_sim
+array([-0.25149893, -0.43257941, -0.29272166, -1.10818408,  1.01151004,
+        0.24979228,  2.5196525 , -1.24347383,  0.14139931,  0.71900744])
+>>> Is.p_z_sim
+array([ 0.38652281,  0.3633092 ,  0.38221136,  0.21589254,  0.23918576,
+        0.38668819,  0.0166847 ,  0.18414126,  0.39497397,  0.30807119])
+>>>
+}}}
