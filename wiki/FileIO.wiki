@@ -23,6 +23,10 @@ Note that in some cases the FileIO module will peek instead your file to determi
 
 = Examples =
 
+== Reading files into Python ==
+
+*NOTE*: all the examples assume you are in the directory {{{../trunk/pysal/examples}}}
+
 *Shapefiles*
 {{{
 >>> import pysal
@@ -76,4 +80,24 @@ Note that in some cases the FileIO module will peek instead your file to determi
 >>> from pysal.cg import standalone
 >>> standalone.get_bounding_box(polys)[:]
 [-92.700675964355469, 36.881809234619141, -87.916572570800781, 40.329566955566406]
+}}}
+
+== Writing out files ==
+
+*Shapefiles*
+{{{
+#Having shp from the reading example, write the second polygon (.dbf order)
+>>> fo=pysal.open('scnd_poly.shp','w')
+>>> fo.write(polys[1])
+>>> fo.close()
+}}}
+
+*DBF files*
+{{{
+#With the object db from the DBF reading example, create a .dbf for scnd_poly.shp
+>>> odb=pysal.open('scnd_poly.dbf','w')
+>>> odb.header=db.header
+>>> odb.field_spec=db.field_spec
+>>> odb.wite(db[1][0])
+>>> odb.close()
 }}}
