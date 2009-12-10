@@ -98,6 +98,6 @@ Note that in some cases the FileIO module will peek instead your file to determi
 >>> odb=pysal.open('scnd_poly.dbf','w')
 >>> odb.header=db.header
 >>> odb.field_spec=db.field_spec
->>> odb.wite(db[1][0])
+>>> odb.write(db[1][0])
 >>> odb.close()
 }}}
