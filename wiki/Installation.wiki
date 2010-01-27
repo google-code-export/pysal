@@ -21,7 +21,7 @@ Before installing PySAL, make sure the following libraries are properly installe
 
 =Installing from source code=
 As PySAL is currently in alpha stage, we are not yet preparing binary releases. Users can grab the source code from our subversion repository.
-==Linux and Mac OS X (and most *Nix machines)==
+==Linux and Mac OS X (and most `*`Nix machines)==
 To download the code, open up a terminal (`/Applications/Utilities/Terminal`) and move to the directory where you wish to download PySAL by typing:
 
 {{{
