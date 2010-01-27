@@ -2,22 +2,74 @@
 #labels Phase-Deploy,Featured
 #sidebar TableOfContents
 
+
 = Introduction =
 
-This page provides instructions on how to install PySAL. Required dependencies are also listed.
+This page provides instructions on how to install PySAL on different platforms. Required dependencies are also listed.
 
+<wiki:toc max_depth="3" />
 
 = Dependencies =
+Before installing PySAL, make sure the following libraries are properly installed on you machine.
 ==Required==
- * Python 2.5 or later
- * Numpy 1.2 or later
- * Scipy 0.7 or later
+ * [http://www.python.org/ Python] 2.5 or later
+ * [http://numpy.scipy.org/ Numpy] 1.2 or later
+ * [http://www.scipy.org/ Scipy] 0.7 or later
 ==Optional but recommended==
- * iPython
- * rtree
-==Installing from source code==
-As PySAL is currently in alpha stage, we are not yet preparing binary releases. Users can grab the source code from our subversion repository using the following command:
+ * [http://ipython.scipy.org/moin/Download iPython]
+ * [http://pypi.python.org/pypi/Rtree rtree]
+
+=Installing from source code=
+As PySAL is currently in alpha stage, we are not yet preparing binary releases. Users can grab the source code from our subversion repository.
+==Linux and Mac OS X (and most *Nix machines)==
+To download the code, open up a terminal (`/Applications/Utilities/Terminal`) and move to the directory where you wish to download PySAL by typing:
+
+{{{
+cd /path_to_desired/folder
+}}}
+
+Once there, type the the following command:
 
 {{{
 svn checkout http://pysal.googlecode.com/svn/trunk/ pysal-read-only
 }}}
+
+This will create a folder called 'pysal' containing all the source code into the folder you chose. Now you have two alternative options:
+ * Use the [http://docs.python.org/install/index.html Python Module installer] (easiest), which will automatically install the package in you machine. To do that, go to the `pysal` folder:
+ {{{
+ cd  /path_to_desired/folder/pysal
+ }}}
+ And type:
+ {{{
+ python setup.py install
+ }}}
+ * Add the PySAL folder to the Python path so Python _knows_ where to look for PySAL. This is recommended for developers and/or packages at early stages as updating new versions through `svn` is much more straightforward. To do it, you need to open your bash profile (if it doesn't exist, just create a new text file in the home directory and name it `.bash_profile`) and add the folder. Open the file by typing in the terminal:
+ {{{
+ open ~/.bash_profile
+ }}}
+ NOTE: replace the command `open` by that of a text editor if you are in Linux (`gedit` for instance, if you are in Ubuntu).
+ Now add the following line at the end of the text file:
+ {{{
+ export PYTHONPATH=${PYTHONPATH}:"/path_to_desired/folder/pysal/"
+ }}}
+ Save and quit the file. Source the bash profile again:
+ {{{
+ source ~/.bash_profile
+ }}}
+You are all set!!! Now you can open up a fresh python session and start enjoying PySAL, you should be able to do (within a python session):
+ {{{
+In [1]: import pysal
+
+In [2]: pysal.open.check()
+PySAL File I/O understands the following file extensions:
+Ext: '.shp', Modes: ['r', 'wb', 'w', 'rb']
+Ext: '.shx', Modes: ['r', 'wb', 'w', 'rb']
+Ext: '.geoda_txt', Modes: ['r']
+Ext: '.dbf', Modes: ['r', 'w']
+Ext: '.gwt', Modes: ['r']
+Ext: '.gal', Modes: ['r', 'w']
+Ext: '.csv', Modes: ['r']
+Ext: '.wkt', Modes: ['r']
+
+In [3]: 
+ }}} 
