@@ -15,7 +15,7 @@ Before installing PySAL, make sure the following libraries are properly installe
  * [http://www.python.org/ Python] 2.5 or later
  * [http://numpy.scipy.org/ Numpy] 1.3 
  * [http://www.scipy.org/ Scipy] 0.7 or later
- Dependencies to build documentation:
+Dependencies to build documentation:
  * [http://sphinx.pocoo.org/ Sphinx] 
  * [http://pypi.python.org/pypi/numpydoc/0.2 numpydoc] extension to Sphinx (NOT included in EPD)
 ==Optional but recommended==
