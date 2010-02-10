@@ -15,10 +15,13 @@ Before installing PySAL, make sure the following libraries are properly installe
  * [http://www.python.org/ Python] 2.5 or later
  * [http://numpy.scipy.org/ Numpy] 1.3 
  * [http://www.scipy.org/ Scipy] 0.7 or later
+ Dependencies to build documentation:
+ * [http://sphinx.pocoo.org/ Sphinx] 
+ * [http://pypi.python.org/pypi/numpydoc/0.2 numpydoc] extension to Sphinx (NOT included in EPD)
 ==Optional but recommended==
  * [http://ipython.scipy.org/moin/Download iPython]
- * [http://pypi.python.org/pypi/Rtree rtree]
-==Enthought Python Distribution==
+ * [http://pypi.python.org/pypi/Rtree rtree] (NOT included in EPD)
+==Enthought Python Distribution (EPD)==
 Instead of installing them one by one, you can get all the required dependencies as well as iPython and a whole bunch of other Python packages by easily installing the [http://www.enthought.com/products/epd.php Enthought Python Distribution], available free of charge for Academics. Download it [http://www.enthought.com/products/edudownload.php here]. 
 
 =Installing from source code=
