@@ -1,5 +1,8 @@
-﻿#summary How to install PySAL on various platforms.
-#labels Phase-Deploy,Featured
+﻿#labels Phase-Deploy,Featured
+*Up-to-date installation instructions can always be found at http://pysal.org/users/installation.html
+*
+
+#summary How to install PySAL on various platforms.
 #sidebar TableOfContents
 
 
@@ -112,4 +115,3 @@ Ext: '.csv', Modes: ['r']
 Ext: '.wkt', Modes: ['r']
 >>>
 }}}
-
