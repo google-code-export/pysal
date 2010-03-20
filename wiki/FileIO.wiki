@@ -1,5 +1,5 @@
 ﻿#summary An Overview of the FileIO system in PySAL.
-#labels Featured,Phase-Support
+#labels Deprecated,Phase-Support
 
 = Introduction =
 
