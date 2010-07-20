@@ -1,4 +1,4 @@
-#How to build pysal distributions
+#summary How to build pysal distributions
 
 = Introduction =
 
