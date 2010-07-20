@@ -1,4 +1,4 @@
-#How to build pysal distributions
+How to build pysal distributions
 
 = Introduction =
 
@@ -13,3 +13,5 @@ A good reference is http://docs.python.org/distutils/sourcedist.html
 = Binary distros =
 
 Making a Windows binary, with a not-so-shabby installer, is not too difficult as long as we rely on the user to provide the package dependencies.  Run {{{python setup.py bdist_wininst}}} to generate a Windows executable. 
+
+*EDIT ME as things change*
