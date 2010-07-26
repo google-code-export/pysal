@@ -1,0 +1,118 @@
+******************************************
+Spatial Weights
+******************************************
+
+Introduction
+============
+
+PySAL supports the creation, manipulation and analysis of spatial weights
+matrices of three different types:
+
+ * Contiguity Based Weights
+ * Distance Based Weights
+ * General Weights
+
+These different types of weights matrices are implemented as instances of the PySAL weights class. 
+
+Contiguity Based Weights
+========================
+
+To illustrate the general weights object, we start with a simple contiguity
+matrix constructed for a 5 by 5 lattice::
+
+    >>> import pysal
+    >>>
+    >>> w=pysal.lat2W(5,5)
+
+The w object has a number of attributes::
+
+    >>> w.n
+    25
+    >>> w.pct_nonzero
+    0.128
+    >>> w.weights[0]
+    [1.0, 1.0]
+    >>> w.neighbors[0]
+    [5, 1]
+    >>> w.neighbors[5]
+    [0, 10, 6]
+    >>> w.histogram
+    [(2, 4), (3, 12), (4, 9)]
+
+The histogram attribute is a set of tuples indicating the cardinality of the neighbor relations. In this case we see that there are 4 units that have 2 neighbors (corner cells), 12 units with 3 neighbors (edge cells), and 9 units with 4 neighbors (internal cells).
+
+Contiguity weights can also be generated directly from shapefiles::
+
+    >>> w=pysal.rook_from_shapefile("examples/columbus.shp")
+    >>> w.n
+    49
+    >>> w.pct_nonzero
+    0.083298625572678045
+    >>> w.histogram
+    [(2, 7), (3, 10), (4, 17), (5, 8), (6, 3), (7, 3), (8, 0), (9, 1)]
+    >>> w=pysal.queen_from_shapefile("examples/columbus.shp")
+    >>> w.pct_nonzero
+    0.098292378175760101
+    >>> w.histogram
+    [(2, 5), (3, 9), (4, 12), (5, 5), (6, 9), (7, 3), (8, 4), (9, 1), (10, 1)]
+    
+
+
+Distance Based Weights
+======================
+
+General distance weights
+------------------------
+
+Weights based on distance between spatial objects can be constructed. Here we
+create a simple 5 by 5 grid of observations and generate inverse distance
+weights::
+
+    In [7]: import numpy
+
+    In [8]: x,y=numpy.indices((5,5))
+
+    In [9]: x.shape=(25,1)
+
+    In [10]: y.shape=(25,1)
+
+    In [11]: data=numpy.hstack([x,y])
+
+    In [12]: wid=pysal.weights.InverseDistance(data)
+
+    In [13]: wid_ns=pysal.weights.InverseDistance(data,row_standardize=False)
+
+    In [14]: wid.weights[0][0:3]
+    Out[14]: [0.0, 0.21689522769159933, 0.054223806922899832]
+
+    In [15]: wid_ns.weights[0][0:3]
+    Out[15]: [0.0, 1.0, 0.25]
+
+    In [16]: wid.pct_nonzero
+    Out[16]: 0.95999999999999996
+
+    In [17]: 
+
+Nearest neighbor weights
+------------------------
+
+Simple contiguity matrices based on nearest neighbor relations can also be
+defined. In the following example we create three different weights objects
+for k-nearest neighbors with k from 2 to 4::
+
+        >>> c=5
+        >>> nf=num.indices((c,c)).flatten()
+        >>> data=num.array(zip(nf[0:c*c],nf[c*c::]))
+        >>> wid=pysal.weights.InverseDistance(data)
+        >>> wid_ns=pysal.weights.InverseDistance(data,row_standardize=False)
+        >>> wid.weights[0][0:3]
+        [0.0, 0.21689522769159933, 0.054223806922899832]
+        >>> wid_ns.weights[0][0:3]
+        [0.0, 1.0, 0.25]
+        >>> from pysal.weights import NearestNeighbors as nn
+        >>> nnw=[ nn(data,k) for k in range(2,5)]
+        >>> for k,nnwk in enumerate(nnw):
+              print k+2,nnwk.neighbors[0]
+        2 [1, 5]
+        3 [1, 5, 6]
+        4 [1, 5, 6, 2]

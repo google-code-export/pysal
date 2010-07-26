@@ -1,0 +1,44 @@
+.. _library-index
+
+#################
+API Reference
+#################
+
+:Release: |version|
+:Date: |today|
+
+Python Spatial Analysis Library
+===============================
+
+The Python Spatial Analysis Library consists of several sub-packages each addressing a different area of spatial analysis.  In addition to these sub-packages PySAL includes some general utilities used across all modules.
+
+Note that this documentation is under development and is thus not fully
+complete. 
+
+Documentation
+-------------
+PySAL documentation is available in two forms: python docstrings and a html webpage at http://pysal.org/
+
+Available sub-packages
+----------------------
+.. toctree::
+    :maxdepth: 1
+
+    core/index
+    cg/index
+    esda/index
+    inequality/index
+    spatial_dynamics/index
+    region/index
+    weights/index
+
+    open
+
+
+
+Utilities
+---------
+open
+    Tool for file input and output, supports many well known file formats
+__version__
+    PySAL version string
