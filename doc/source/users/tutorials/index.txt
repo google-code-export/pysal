@@ -6,7 +6,14 @@ Tutorials
 
 .. toctree::
    :maxdepth: 2
-
+   
+   Introduction <intro>
    File Input and Output <fileio>
    Spatial Weights <weights>
+   Spatial Autocorrelation <autocorrelation>
+   Spatial Smoothing <smoothing>
+   Regionalization <region>
+   Spatial Dynamics <dynamics>
+   Spatial Inequality
+   Map Classifiers
    Sample Datasets <examples>
