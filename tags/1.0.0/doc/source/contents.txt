@@ -1,0 +1,16 @@
+.. _contents:
+
+===================
+PySAL Documentation
+===================
+
+    :Release: |version|
+    :Date: |today|
+
+
+.. toctree::
+    :maxdepth: 2
+
+    users/index
+    developers/index
+    library/index

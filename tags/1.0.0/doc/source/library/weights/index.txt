@@ -1,0 +1,11 @@
+:mod:`pysal.weights` --- Spatial Weights
+==========================================
+
+.. toctree::
+
+    weights
+    Contiguity
+    Distance
+    spatial_lag
+    user
+    Wsets
