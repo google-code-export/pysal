@@ -1,3 +1,4 @@
+#labels sprint
 = PySAL 1.1 Code Sprint Schedule =
 
 == When and Where ==
