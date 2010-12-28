@@ -12,13 +12,13 @@
 
    * Serge Rey   - 3,4,5,6,7
    * Dave Folch - 3,4,5,6,7 (Tempe)
-   * Dani Arribas - 3,4,5,7
+   * Dani Arribas - 3,4,7: Remote (Zaragoza, SPAIN)
    * Charlie Schmidt - 3,4,5,7
    * Phil Stephens - 3,4,5,6,7
    * Nick Malizia  - 3(AM) - Remote; 5,6,7(AM) - Local
 
 == Logistical Issues (Pre sprint) ==
-   * remote participants
+   * remote participants: Skype/WebEX
    * booking rooms at Coor (5501)
    * recording progress
 
