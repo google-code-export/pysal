@@ -1,16 +1,11 @@
-#summary One-sentence summary of this page.
+# PySAL Documentation
 
 = Introduction =
 
-Add your content here.
+PySAL's standard documentation is substantial. You can download your own copy or browse it online.
 
+= PySAL Documentation by Version =
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
   
-  * [http://pysal.org/1.1/contents.html 1.1dev]
-  * [http://pysal.org/1.0/contents.html Stable 1.0]
+  * [http://pysal.org/1.1/contents.html Unreleased, development version]
+  * [http://pysal.org/1.0/contents.html PySAL 1.0], documentation released 2010 08 01
