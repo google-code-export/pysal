@@ -1,0 +1,14 @@
+===============
+Developer Guide
+===============
+
+
+.. toctree::
+   :maxdepth: 2
+
+   guidelines
+   testing
+   pep/index
+   docs/index
+   release
+

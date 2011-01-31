@@ -1,0 +1,10 @@
+:mod:`pysal.cg` --- Computational Geometry
+==========================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+
+

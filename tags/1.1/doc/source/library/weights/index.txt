@@ -1,0 +1,9 @@
+:mod:`pysal.weights` --- Spatial Weights
+==========================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+    

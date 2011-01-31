@@ -1,0 +1,107 @@
+***********************
+PySAL Release Managment
+***********************
+
+Preparing a release
+###################
+
+One individual developer will be assigned as the release manager and will be
+responsible for building, testing, and uploading the releases.
+
+Building the release
+====================
+
+A clean svn co of the trunk should be done on the machine used to build the release.
+
+Source Distributions
+^^^^^^^^^^^^^^^^^^^^
+
+The work of specifying files and folders to include in a pysal source
+distribution has been done. These things are specified in setup.py and
+MANIFEST.in. To build a new source package, run::
+
+  >>> python setup.py sdist --formats=gztar,zip 
+
+to generate two source distributions.  A good reference is http://docs.python.org/distutils/sourcedist.html
+
+Binary Installer for Windows 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Making a Windows binary, with a not-so-shabby installer, is not too difficult
+as long as we rely on the user to provide the package dependencies. Run:
+
+   >>> python setup.py bdist_wininst
+   
+to generate a Windows graphical installer on either OS X or Windows. On Windows
+only, the option exists to use the Microsoft Installer format MSI, which is
+prettier but allows the user to install the package in the wrong place. For a
+look at that, on Windows run:
+
+   >>> python setup.py bdist --formats=msi
+
+
+Binary Installer for OS X 
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To make a Mac OS X graphical installer, first install 'bdist_mpkg' from the
+Python Package Index using easy_install or pip or downloading the source
+code. Once it is installed, run ::
+
+    >>> bdist_mpkg setup.py build 
+
+to build the .mpkg package installer in the dist/ directory.
+Next, we convert the .mpkg into a disk image suitable for redistribution by
+placing it in its own folder ('pysal4mac' in this example), then running the command::
+ 
+    >>> hdiutil create -fs HFS+ -srcfolder pysal4mac/ pysal4mac.dmg
+
+
+Post-release svn changes
+########################
+Two-dot versions of PySAL are released twice a year. Using the example of
+release X.0, we outline plans for updating the repository and bug fixes here.
+
+When X.0 is released we do the following:
+
+  * Code related changes
+     * ensure all tests pass
+     * update the change log
+     * edit manifest.in
+     * thanks
+     * update setup.py prior to build
+     * create a tag X.0::
+
+	svn copy https://pysal.googlecode.com/svn/trunk \
+        http://pysal.googlecode.com/svn/tags/X.0 -m "Release X.0"
+
+     * bump the trunk up to version X.1 by editing `version.py`
+     * build release for X.0 out of tag X.0
+     * update the release on http://pypi.python.org
+     * upload releases to code.google.com/p/pysal/downloads
+  * Web site related changes
+     * edit documentation links on http://code.google.com/p/pysal/ (which as
+       of 1.1 will be the landing page for pysal.org)
+  * Documentation related changes
+     * create new release directory on documentation server
+     * edit cronjob on peloton to rsync to new release directory
+     * edit contents.rst to include *New in this release*
+
+
+Development on X.1 happens in trunk. Code in tag X.0 is never changed.  Bugs in
+X.0 that are reported by users or developers are fixed in branch X.0 and in
+trunk, if relevant. It could be that trunk had moved on so that the bug is no
+longer in the trunk code (functionality may have been dropped or refactored for
+example).
+
+In the event that bug fixes are substantial between X.0 and the release of X.1,
+we could do a release out of branch X.0. This would be tagged as X.0.X. Since
+it is a tag, code in there never gets changed, but bug fixes in the X.0.x
+series continue to be made in branch X.0.
+
+So to summarize our major versions two-dot:  X.0, X.1, X.2, X.3, etc. These are
+released every six months at the end of a release cycle. Bug fix releases for a
+major release are three-dot: X.0.1, X.0.2, etc,  and are released during a
+release cycle.
+
+Developers wanting to explore major new initiatives are encouraged to make
+experimental branches for that work and not use trunk.

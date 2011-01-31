@@ -1,0 +1,10 @@
+:mod:`pysal.region` --- Spatially constrained clustering
+=============================================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+
+
