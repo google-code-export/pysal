@@ -1,0 +1,10 @@
+:mod:`pysal.spatial_dynamics` --- Spatial Dynamics
+==================================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+
+

@@ -1,0 +1,9 @@
+:mod:`pysal.esda` --- Exploratory Spatial Data Analysis
+=========================================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+

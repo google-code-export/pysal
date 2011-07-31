@@ -1,0 +1,15 @@
+===============
+Developer Guide
+===============
+
+
+.. toctree::
+   :maxdepth: 2
+
+   guidelines
+   projectsusingpysal
+   testing
+   pep/index
+   docs/index
+   release
+
