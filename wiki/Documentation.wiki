@@ -7,6 +7,7 @@ PySAL's standard documentation is substantial. You can download your own copy or
 == PySAL Documentation by Version ==
 
   
-  * [http://pysal.org/1.2/contents.html Unreleased, development version]
+  * [http://pysal.org/1.3/contents.html Unreleased, development version]
+  * [http://pysal.org/1.2/contents.html  PySAL 1.2], documentation released 2011 08 01
   * [http://pysal.org/1.1/contents.html PySAL 1.1], documentation released 2011 02 01
   * [http://pysal.org/1.0/contents.html PySAL 1.0], documentation released 2010 08 01
