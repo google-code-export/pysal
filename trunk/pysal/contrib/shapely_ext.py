@@ -248,7 +248,7 @@ if __name__=='__main__':
     #step 0, create 2 points
     pt1 = pysal.cg.shapes.Point((0,0))
     pt2 = pysal.cg.shapes.Point((10,10))
-    o = pysal.open('step2.shp','w')
+    o = pysal.open('step0.shp','w')
     o.write(pt1)
     o.write(pt2)
     o.close()
