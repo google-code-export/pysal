@@ -1,5 +1,8 @@
 import pysal
 import shapely.geometry
+_basegeom = shapely.geometry.base.BaseGeometry
+__all__ = ["to_wkb", "to_wkt", "area", "distance", "length", "boundary", "bounds", "centroid", "representative_point", "convex_hull", "envelope", "buffer", "simplify", "difference", "intersection", "symmetric_difference", "union", "has_z", "is_empty", "is_ring", "is_simple", "is_valid", "relate", "contains", "crosses", "disjoint", "equals", "intersects", "overlaps", "touches", "within", "equals_exact", "almost_equals", "project", "interpolate"]
+
 
 def to_wkb(shape):
     if not hasattr(shape,'__geo_interface__'): raise TypeError, "%r does not appear to be a shape"%shape
@@ -236,7 +239,10 @@ def interpolate(self, distance, normalized=False):
     return pysal.cg.shapes.asShape(res)
     
 
-
+# Copy doc strings from shapely
+for method in __all__:
+    if hasattr(_basegeom, method):
+        locals()[method].__doc__ = getattr(_basegeom,method).__doc__
 
 if __name__=='__main__':
     #step 0, create 2 points
