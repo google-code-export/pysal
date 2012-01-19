@@ -281,7 +281,7 @@ def natural_breaks(values, k = 5, itmax = 100):
     cuts = [max(values[c1 == c]) for c in rk]
     return sids, seeds, diffs, class_ids, solved, it, cuts
 
-def _fisher_jenks_means(values, classes=5):
+def _fisher_jenks_means(values, classes=5, sort=True):
   """
   Jenks Optimal (Natural Breaks) algorithm implemented in Python.
   The original Python code comes from here:
@@ -294,7 +294,8 @@ def _fisher_jenks_means(values, classes=5):
   
   """
 
-  values.sort()
+  if sort:
+    values.sort()
   mat1 = []
   for i in range(0,len(values)+1):
     temp = []
