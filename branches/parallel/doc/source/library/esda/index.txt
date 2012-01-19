@@ -1,0 +1,11 @@
+:mod:`pysal.esda` --- Exploratory Spatial Data Analysis
+=========================================================
+
+.. toctree::
+
+    geary
+    join_counts
+    mapclassify
+    moran
+    smoothing
+
