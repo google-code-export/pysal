@@ -350,7 +350,133 @@ def _fisher_jenks_means(values, classes=5, sort=True):
     countNum -= 1
   return kclass
 
+def _fisher_jenks(values, classes=5, sort=True):
+  """
+  Our own version of Jenks Optimal (Natural Breaks) algorithm
+  implemented in Python.
+  
+  """
 
+  if sort:
+    values.sort()
+  numVal = len(values)
+  varMat = np.zeros((numVal+1, numVal+1))
+
+  # building up the initial variance matrix
+  for i in range(1, numVal+1):
+    sumVals = 0
+    sqVals = 0
+    numVals = 0
+    for j in range(i, numVal+1):
+      val = values[j-1]
+      sumVals += val
+      sqVals += val * val
+      numVals += 1.0
+      denom = 1.0 / numVals
+      varMat[i][j] = sqVals - sumVals * sumVals * denom
+  
+  errorMat = np.zeros((numVal+1, classes+1))
+  pivotMat = np.zeros((numVal+1, classes+1))
+
+  for cIdx in range(2, classes+1):
+    for vIdx in range(cIdx, numVal+1):
+      pivot = -1
+      error = float('inf')
+      if (cIdx == 2):
+	for curp in range(1, vIdx):
+          curError = varMat[1][curp] + varMat[curp+1][vIdx]
+	  if curError < error:
+	    error = curError
+	    pivot = curp
+      else:
+        for curp in range(cIdx-1, vIdx):
+	  curError = errorMat[curp][cIdx-1] + varMat[curp+1][vIdx]
+	  if curError < error:
+	    error = curError
+	    pivot = curp
+      errorMat[vIdx][cIdx] = error
+      pivotMat[vIdx][cIdx] = pivot
+
+  pivots = (classes+1)*[0]
+  pivots[classes] = values[numVal-1]
+  lastPivot = pivotMat[numVal][classes]
+
+  pNum = classes-1
+  while pNum > 0:
+    pivots[pNum] = values[lastPivot - 1]
+    lastPivot = pivotMat[lastPivot][pNum]
+    pNum -= 1
+  pivots[0] = values[0]
+  return pivots
+
+def _pfisher_jenks_means(values, classes=5, sort=True):
+  """
+  Parallel Jenks Optimal (Natural Breaks) algorithm implemented in Python.
+  The original sequential Python code comes from here:
+  http://danieljlewis.org/2010/06/07/jenks-natural-breaks-algorithm-in-python/
+  and is based on a JAVA and Fortran code available here:
+  https://stat.ethz.ch/pipermail/r-sig-geo/2006-March/000811.html
+  
+  Returns class breaks such that classes are internally homogeneous while 
+  assuring heterogeneity among classes.
+  
+  """
+
+  if sort:
+    values.sort()
+  mat1 = []
+  for i in range(0,len(values)+1):
+    temp = []
+    for j in range(0,classes+1):
+        temp.append(0)
+    mat1.append(temp)
+  mat2 = []
+  for i in range(0,len(values)+1):
+    temp = []
+    for j in range(0,classes+1):
+        temp.append(0)
+    mat2.append(temp)
+  for i in range(1,classes+1):
+    mat1[1][i] = 1
+    mat2[1][i] = 0
+    for j in range(2,len(values)+1):
+        mat2[j][i] = float('inf')
+  v = 0.0
+  for l in range(2,len(values)+1):
+    s1 = 0.0
+    s2 = 0.0
+    w = 0.0
+    for m in range(1,l+1):
+      i3 = l - m + 1
+      val = float(values[i3-1])
+      s2 += val * val
+      s1 += val
+      w += 1
+      v = s2 - (s1 * s1) / w
+      i4 = i3 - 1
+      if i4 != 0:
+        for j in range(2,classes+1):
+          if mat2[l][j] >= (v + mat2[i4][j - 1]):
+            mat1[l][j] = i3
+            mat2[l][j] = v + mat2[i4][j - 1]
+    mat1[l][1] = 1
+    mat2[l][1] = v
+
+  k = len(values)
+
+  kclass = []
+  for i in range(0,classes+1):
+    kclass.append(0)
+  kclass[classes] = float(values[len(values) - 1])
+  kclass[0] = float(values[0])
+  countNum = classes
+  while countNum >= 2:
+    pivot = mat1[k][countNum]
+    id = int(pivot - 2)
+    kclass[countNum - 1] = values[id]
+    k = int(pivot - 1)
+    countNum -= 1
+  return kclass
 
 class Map_Classifier:
     """
@@ -1002,8 +1128,85 @@ class Fisher_Jenks(Map_Classifier):
         x = self.y.copy()
         self.bins =  _fisher_jenks_means(x, classes=self.k)[1:]
 
+class Fisher_Jenks_1(Map_Classifier):
+    """
+    Fisher Jenks optimal classifier - mean based
+
+    Parameters
+    ----------
+    y : array (n,1)
+        values to classify
+    k : int
+        number of classes required
+
+    Attributes
+    ----------
+
+    yb      : array (n,1)
+              bin ids for observations
+    bins    : array (k,1)
+              the upper bounds of each class 
+    k       : int
+              the number of classes
+    counts  : array (k,1)
+              the number of observations falling in each class
+ 
+    """
+
+    def __init__(self, y, k = K):
+        self.k = k
+        Map_Classifier.__init__(self, y)
+        self.name = "Fisher_Jenks_1"
+
+    def _set_bins(self):
+        x = self.y.copy()
+        self.bins =  _fisher_jenks(x, classes=self.k)[1:]
+
+class PFisher_Jenks(Map_Classifier):
+    """
+    Parallel Fisher Jenks Optimal Classifier - mean based
+
+    Parameters
+    ----------
+    y : array (n,1)
+        values to classify
+    k : int
+        number of classes required
+
+    Attributes
+    ----------
+
+    binIds     : array (n,1)
+                 bin ids for observations
+    bins       : array (k,1)
+                 the upper bounds of each class 
+    k          : int
+                 the number of classes
+    binCounts  : array (k,1)
+                 the number of observations falling in each class
 
 
+    Examples
+    --------
+
+    >>> cal = load_example()
+    >>> fj = PFisher_Jenks(cal)
+    >>> fj.adcm
+    799.24000000000001
+    >>> fj.bins
+    [75.290000000000006, 192.05000000000001, 370.5, 722.85000000000002, 4111.45]
+    >>> fj.counts
+    array([49,  3,  4,  1,  1])
+    >>> 
+    """
+    def __init__(self, y, k = K):
+        self.k = k
+        Map_Classifier.__init__(self, y)
+        self.name = "Par_Fisher_Jenks"
+
+    def _set_bins(self):
+        x = self.y.copy()
+        self.bins =  _pfisher_jenks_means(x, classes=self.k)[1:]
 
 class Jenks_Caspall(Map_Classifier):
     """
