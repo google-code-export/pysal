@@ -7,6 +7,7 @@ __credits__= "Copyright (c) 2009-10 Sergio J. Rey"
 __all__=['quantile','Map_Classifier','Box_Plot','Equal_Interval','Fisher_Jenks', 'Jenks_Caspall','Jenks_Caspall_Forced','Jenks_Caspall_Sampled', 'Max_P_Classifier','Maximum_Breaks','Natural_Breaks', 'Quantiles','Percentiles', 'Std_Mean','User_Defined', 'gadf','K_classifiers']
 
 from pysal.common import *
+import time
 
 K = 5 # default number of classes in any map scheme with this as an argument
 
@@ -296,6 +297,8 @@ def _fisher_jenks_means(values, classes=5, sort=True):
 
   if sort:
     values.sort()
+  
+  t0 = time.time()
   mat1 = []
   for i in range(0,len(values)+1):
     temp = []
@@ -313,6 +316,7 @@ def _fisher_jenks_means(values, classes=5, sort=True):
     mat2[1][i] = 0
     for j in range(2,len(values)+1):
         mat2[j][i] = float('inf')
+  
   v = 0.0
   for l in range(2,len(values)+1):
     s1 = 0.0
@@ -333,7 +337,7 @@ def _fisher_jenks_means(values, classes=5, sort=True):
             mat2[l][j] = v + mat2[i4][j - 1]
     mat1[l][1] = 1
     mat2[l][1] = v
-
+  
   k = len(values)
 
   kclass = []
@@ -348,6 +352,9 @@ def _fisher_jenks_means(values, classes=5, sort=True):
     kclass[countNum - 1] = values[id]
     k = int(pivot - 1)
     countNum -= 1
+
+  t1 = time.time()
+  print t1 - t0
   return kclass
 
 def _fisher_jenks(values, classes=5, sort=True):
@@ -359,8 +366,14 @@ def _fisher_jenks(values, classes=5, sort=True):
 
   if sort:
     values.sort()
+
+  t0 = time.time()
   numVal = len(values)
+
   varMat = np.zeros((numVal+1, numVal+1))
+  errorMat = np.zeros((numVal+1, classes+1))
+  pivotMat = np.zeros((numVal+1, classes+1))
+  errorMat.fill(float('inf'))
 
   # building up the initial variance matrix
   for i in range(1, numVal+1):
@@ -368,34 +381,23 @@ def _fisher_jenks(values, classes=5, sort=True):
     sqVals = 0
     numVals = 0
     for j in range(i, numVal+1):
-      val = values[j-1]
+      val = float(values[j-1])
       sumVals += val
       sqVals += val * val
       numVals += 1.0
-      denom = 1.0 / numVals
-      varMat[i][j] = sqVals - sumVals * sumVals * denom
+      varMat[i][j] = sqVals - sumVals * sumVals / numVals
+      if i == 1:
+        errorMat[j][1] = varMat[i][j]
   
-  errorMat = np.zeros((numVal+1, classes+1))
-  pivotMat = np.zeros((numVal+1, classes+1))
 
   for cIdx in range(2, classes+1):
-    for vIdx in range(cIdx, numVal+1):
-      pivot = -1
-      error = float('inf')
-      if (cIdx == 2):
-	for curp in range(1, vIdx):
-          curError = varMat[1][curp] + varMat[curp+1][vIdx]
-	  if curError < error:
-	    error = curError
-	    pivot = curp
-      else:
-        for curp in range(cIdx-1, vIdx):
-	  curError = errorMat[curp][cIdx-1] + varMat[curp+1][vIdx]
-	  if curError < error:
-	    error = curError
-	    pivot = curp
-      errorMat[vIdx][cIdx] = error
-      pivotMat[vIdx][cIdx] = pivot
+    for vl in range(cIdx-1, numVal):
+      preError = errorMat[vl][cIdx-1]
+      for vIdx in range(vl+1, numVal+1):
+	curError = preError + varMat[vl+1][vIdx]
+	if errorMat[vl][cIdx] > curError:
+          errorMat[vl][cIdx] = curError
+	  pivotMat[vl][cIdx] = vl
 
   pivots = (classes+1)*[0]
   pivots[classes] = values[numVal-1]
@@ -407,6 +409,9 @@ def _fisher_jenks(values, classes=5, sort=True):
     lastPivot = pivotMat[lastPivot][pNum]
     pNum -= 1
   pivots[0] = values[0]
+  
+  t1 = time.time()
+  print t1 - t0
   return pivots
 
 def _pfisher_jenks_means(values, classes=5, sort=True):
