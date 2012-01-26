@@ -370,10 +370,17 @@ def _fisher_jenks(values, classes=5, sort=True):
   t0 = time.time()
   numVal = len(values)
 
-  varMat = np.zeros((numVal+1, numVal+1))
-  errorMat = np.zeros((numVal+1, classes+1))
-  pivotMat = np.zeros((numVal+1, classes+1))
-  errorMat.fill(float('inf'))
+  varMat = (numVal+1)*[0]
+  for i in range(numVal+1):
+    varMat[i] = (numVal+1)*[0]
+
+  errorMat = (numVal+1)*[0]
+  for i in range(numVal+1):
+    errorMat[i] = (classes+1)*[float('inf')]
+
+  pivotMat = (numVal+1)*[0]
+  for i in range(numVal+1):
+    pivotMat[i] = (classes+1)*[0]
 
   # building up the initial variance matrix
   for i in range(1, numVal+1):
@@ -388,19 +395,19 @@ def _fisher_jenks(values, classes=5, sort=True):
       varMat[i][j] = sqVals - sumVals * sumVals / numVals
       if i == 1:
         errorMat[j][1] = varMat[i][j]
-  
 
   for cIdx in range(2, classes+1):
     for vl in range(cIdx-1, numVal):
       preError = errorMat[vl][cIdx-1]
       for vIdx in range(vl+1, numVal+1):
-	curError = preError + varMat[vl+1][vIdx]
-	if errorMat[vl][cIdx] > curError:
-          errorMat[vl][cIdx] = curError
-	  pivotMat[vl][cIdx] = vl
+        curError = preError + varMat[vl+1][vIdx]
+        if errorMat[vIdx][cIdx] > curError:
+          errorMat[vIdx][cIdx] = curError
+          pivotMat[vIdx][cIdx] = vl
 
   pivots = (classes+1)*[0]
   pivots[classes] = values[numVal-1]
+  pivots[0] = values[0]
   lastPivot = pivotMat[numVal][classes]
 
   pNum = classes-1
@@ -408,7 +415,6 @@ def _fisher_jenks(values, classes=5, sort=True):
     pivots[pNum] = values[lastPivot - 1]
     lastPivot = pivotMat[lastPivot][pNum]
     pNum -= 1
-  pivots[0] = values[0]
   
   t1 = time.time()
   print t1 - t0
