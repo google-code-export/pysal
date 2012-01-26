@@ -1,12 +1,25 @@
 Next steps
 
 
+Next steps
+
+
 ## Coding
  - implement other version of fisher (done)
- - implement our own version of fisher
+ - implement our own version of fisher (done)
+	 - using numpy arrays  seems to be expensive time wise
+	 - implementation decomposes the calculation of the variance and the indexing of the optimal subsets
+	 - need to see if moving to lists with the decomposition gets us back to speed of the original implementation
+	 - requires nxn variance matrix so not applicable for large n cases
+	 - we could still compare for smaller n
  - parallelize our version
  - random sampling version
  - parallelize random sampling version 
+ - idea for algorithm
+	 - if n < NLARGE
+		 - parallelized decompositional approach
+	 - else
+		 - parallelized random sample of nondecomposed approach
  
 ## Experiment
  - design experiment for comparison
@@ -36,4 +49,3 @@ Next steps
 	  - Random sampling experiment
 	  - Efficiency comparisons
   - Conclusion
-
