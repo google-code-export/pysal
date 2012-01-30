@@ -1,0 +1,438 @@
+.. testsetup:: * 
+
+        import pysal
+        import numpy as np
+        np.random.seed(10)
+
+#######################
+Spatial Autocorrelation
+#######################
+
+.. contents::
+
+Introduction
+============
+
+Spatial autocorrelation pertains to the non-random pattern of attribute values
+over a set of spatial units. This can take two general forms: positive
+autocorrelation which reflects value similarity in space, and negative
+autocorrelation or value dissimilarity in space. In either case the
+autocorrelation arises when the observed spatial pattern is different from what would
+be expected under a random process operating in space.
+
+Spatial autocorrelation can be analyzed from two different perspectives. Global
+autocorrelation analysis involves the study of the entire map pattern and
+generally asks the question as to whether the pattern displays clustering or
+not. Local autocorrelation, on the other hand, shifts the focus to explore
+within the global pattern to identify clusters or so called hot spots that may be
+either driving the overall clustering pattern, or that reflect heterogeneities
+that depart from global pattern.
+
+In what follows, we first highlight the global spatial autocorrelation classes
+in PySAL. This is followed by an illustration of the analysis of local spatial
+autocorrelation.
+
+Global Autocorrelation
+======================
+
+PySAL implements three different tests for global spatial autocorrelation:
+Moran's I, Geary's C, and Getis and Ord's G.
+
+Moran's I
+---------
+
+Moran's I measures the global spatial autocorrelation in an attribute :math:`y` measured over :math:`n` spatial units and is given as:
+
+.. math::
+
+        I = n/S_0  \sum_{i}\sum_j z_i w_{i,j} z_j / \sum_i z_i z_i
+
+where :math:`w_{i,j}` is a spatial :doc:`weight <weights>`, :math:`z_i = y_i - \bar{y}`, and :math:`S_0=\sum_i\sum_j w_{i,j}`.  We illustrate the use of Moran's I with a case study of homicide rates for a group of 78 counties surrounding St. Louis over the period 1988-93. [#]_
+We start with the usual imports:
+
+
+        >>> import pysal
+        >>> import numpy as np
+
+Next, we read in the homicide rates:
+
+.. doctest::
+
+        >>> f = pysal.open(pysal.examples.get_path("stl_hom.txt"))
+        >>> y = np.array(f.by_col['HR8893'])
+
+To calculate Moran's I we first need to read in a GAL file for a rook weights
+matrix and create an instance of W:
+
+.. doctest::
+
+        >>> w = pysal.open(pysal.examples.get_path("stl.gal")).read()
+        
+The instance of Moran's I can then be obtained with:
+
+.. doctest::
+
+        >>> mi = pysal.Moran(y, w)
+        >>> mi.I
+        0.24365582621771659
+        >>> mi.EI
+        -0.012987012987012988
+        >>> mi.p_norm
+        0.00027147862770937614
+
+From these results, we see that the observed value for I is significantly above its expected value, under the assumption of normality for the homicide rates. 
+
+If we peek inside the mi object to learn more:
+
+        >>> help(mi)
+
+which generates::
+
+        Help on instance of Moran in module pysal.esda.moran:
+
+        class Moran
+         |  Moran's I Global Autocorrelation Statistic
+         |  
+         |  Parameters
+         |  ----------
+         |  
+         |  y               : array
+         |                    variable measured across n spatial units
+         |  w               : W
+         |                    spatial weights instance
+         |  permutations    : int
+         |                    number of random permutations for calculation of pseudo-p_values
+         |  
+         |  
+         |  Attributes
+         |  ----------
+         |  y            : array
+         |                 original variable
+         |  w            : W
+         |                 original w object
+         |  permutations : int
+         |                 number of permutations
+         |  I            : float
+         |                 value of Moran's I
+         |  EI           : float
+         |                 expected value under normality assumption
+         |  VI_norm      : float
+         |                 variance of I under normality assumption
+         |  seI_norm     : float
+         |                 standard deviation of I under normality assumption
+         |  z_norm       : float
+         |                 z-value of I under normality assumption
+         |  p_norm       : float
+         |                 p-value of I under normality assumption (one-sided)
+         |                 for two-sided tests, this value should be multiplied by 2
+         |  VI_rand      : float
+         |                 variance of I under randomization assumption
+         |  seI_rand     : float
+         |                 standard deviation of I under randomization assumption
+         |  z_rand       : float
+         |                 z-value of I under randomization assumption
+         |  p_rand       : float
+         |                 p-value of I under randomization assumption (1-tailed)
+         |  sim          : array (if permutations>0)
+        
+we see that we can base the inference not only on the normality assumption, but also on random permutations of the values on the spatial units to generate a reference distribution for I under the null:
+
+.. doctest::
+
+        >>> np.random.seed(10)
+        >>> mir = pysal.Moran(y, w, permutations = 9999)
+
+The pseudo p value based on these permutations is: 
+
+.. doctest::
+
+        >>> print mir.p_sim
+        0.0022
+
+in other words there were 14 permutations that generated values for I that
+were as extreme as the original value, so the p value becomes (14+1)/(9999+1). [#]_
+Alternatively, we could use the realized values for I from the permutations and
+compare the original I using a z-transformation to get:
+
+.. doctest::
+
+        >>> print mir.EI_sim
+        -0.0118217511619
+        >>> print mir.z_sim
+        4.55451777821
+        >>> print mir.p_z_sim
+	5.25058844025e-06
+
+When the variable of interest (:math:`y`) is rates based on populations with different sizes, 
+the Moran's I value for :math:`y` needs to be adjusted to account for the differences among populations. [#]_
+To apply this adjustment, we can create an instance of the Moran_Rate class rather than the Moran class.
+For example, let's assume that we want to estimate the Moran's I for the rates of newborn infants who died of 
+Sudden Infant Death Syndrome (SIDS). We start this estimation by reading in the total number of newborn infants (BIR79)
+and the total number of newborn infants who died of SIDS (SID79):
+
+.. doctest::
+
+        >>> f = pysal.open(pysal.examples.get_path("sids2.dbf"))
+        >>> b = np.array(f.by_col('BIR79'))
+        >>> e = np.array(f.by_col('SID79'))
+
+Next, we create an instance of W:
+
+.. doctest::
+
+        >>> w = pysal.open(pysal.examples.get_path("sids2.gal")).read()
+
+Now, we create an instance of Moran_Rate:
+
+.. doctest::
+
+        >>> mi = pysal.esda.moran.Moran_Rate(e, b, w)
+        >>> "%6.4f" % mi.I
+        '0.1662'
+        >>> "%6.4f" % mi.EI
+        '-0.0101'
+        >>> "%6.4f" % mi.p_norm
+        '0.0084'
+
+From these results, we see that the observed value for I is significantly higher than its expected value,
+after the adjustment for the differences in population.
+
+
+Geary's C
+---------
+The second statistic for global spatial autocorrelation implemented in PySAL is Geary's C:
+
+.. math::
+
+        C=\frac{(n-1)}{2S_0} \sum_i\sum_j w_{i,j} (y_i-y_j)^2 / \sum_i z_i^2
+
+with all the terms defined as above. Applying this to the St. Louis data:
+
+.. doctest::
+
+        >>> f = pysal.open(pysal.examples.get_path("stl_hom.txt"))
+        >>> y = np.array(f.by_col['HR8893'])
+        >>> w = pysal.open(pysal.examples.get_path("stl.gal")).read()
+        >>> gc = pysal.Geary(y, w)
+        >>> print gc.C
+        0.586776506108
+        >>> gc.EC
+        1.0
+        >>> print gc.z_norm
+        -4.99194306621
+        >>> gc.p_norm
+        2.9887438468545469e-07
+
+we see that the statistic :math:`C` is significantly lower than its expected
+value :math:`EC`. Although the sign of the standardized statistic is negative (in contrast to what held for :math:`I`, the interpretation is the same, namely evidence of strong positive spatial autocorrelation in the homicide rates.
+
+Similar to what we saw for Moran's I, we can base inference on Geary's C using random spatial permutations:
+
+.. doctest::
+
+        >>> gc = pysal.Geary(y, w, permutations = 9999)
+        >>> print gc.p_z_sim
+	0.0198880753441
+        >>> print gc.p_sim
+        0.0058
+
+with the first p-value based on a z-transform of the observed C relative to the
+distribution of values obtained in the permutations, and the second based on
+the cumulative probability of the observed value in the empirical distribution.
+
+Getis and Ord's G
+-----------------
+The last statistic for global spatial autcorrelation implemented in PySAL is Getis and Ord's G:
+
+.. math::
+
+        G(d)=\frac{\sum_i\sum_j w_{i,j}(d) y_i y_j}{\sum_i\sum_j y_i y_j}
+
+where :math:`d` is a threshold distance used to define a spatial :doc:`weight <weights>`.
+Only :class:`pysal.weights.Distance.DistanceBand` weights objects are applicable to Getis and Ord's G.
+Applying this to the St. Louis data:
+
+.. doctest::
+
+        >>> dist_w = pysal.threshold_binaryW_from_shapefile('../pysal/examples/stl_hom.shp',0.6)
+        >>> dist_w.transform = "B"
+        >>> from pysal.esda.getisord import G
+        >>> g = G(y, dist_w)
+        >>> print g.G
+        0.103483215873
+        >>> print g.EG
+        0.0752580752581
+        >>> print g.z_norm
+        3.28090342959
+        >>> print g.p_norm
+        0.000517375830488
+
+Although we switched the contiguity-based weights object into another distance-based one,
+we see that the statistic :math:`G` is significantly higher than its expected
+value :math:`EG` under the assumption of normality for the homicide rates.
+
+Similar to what we saw for Moran's I and Geary's C, we can base inference on Getis and Ord's G using random spatial permutations:
+
+.. doctest::
+
+        >>> g = G(y, dist_w, permutations = 9999)
+        >>> print g.p_z_sim
+        0.000438499751996
+        >>> print g.p_sim
+        0.0059
+
+with the first p-value based on a z-transform of the observed G relative to the
+distribution of values obtained in the permutations, and the second based on
+the cumulative probability of the observed value in the empirical distribution.
+
+Local Autocorrelation
+=====================
+
+.. _lisa:
+
+To measure local autocorrelation quantitatively, 
+PySAL implements Local Indicators of Spatial Association (LISAs) for Moran's I and Getis and Ord's G.
+
+Local Moran's I
+----------------
+
+PySAL implements local Moran's I as follows:
+
+.. math::
+
+        I_i =  \sum_j z_i w_{i,j} z_j / \sum_i z_i z_i
+
+which results in :math:`n` values of local spatial autocorrelation, 1 for each spatial unit. Continuing on with the St. Louis example, the LISA statistics are obtained with:
+
+.. doctest::
+
+        >>> lm = pysal.Moran_Local(y, w)
+        >>> lm.n
+        78
+        >>> len(lm.Is)
+        78
+        
+thus we see 78 LISAs are stored in the vector lm.Is. Inference about these values is obtained through conditional randomization [#]_ which leads to pseudo p-values for each LISA:
+
+.. doctest::
+
+        >>> lm.p_sim
+        array([ 0.19 ,  0.071,  0.43 ,  0.298,  0.377,  0.066,  0.282,  0.226,
+                0.061,  0.059,  0.259,  0.478,  0.472,  0.375,  0.423,  0.457,
+                0.488,  0.423,  0.407,  0.187,  0.144,  0.035,  0.354,  0.393,
+                0.291,  0.341,  0.214,  0.324,  0.395,  0.395,  0.49 ,  0.423,
+                0.001,  0.435,  0.262,  0.007,  0.001,  0.001,  0.068,  0.002,
+                0.076,  0.443,  0.444,  0.324,  0.238,  0.007,  0.035,  0.035,
+                0.075,  0.122,  0.292,  0.31 ,  0.106,  0.462,  0.04 ,  0.296,
+                0.113,  0.352,  0.327,  0.342,  0.321,  0.407,  0.356,  0.488,
+                0.358,  0.246,  0.289,  0.414,  0.177,  0.146,  0.248,  0.426,
+                0.459,  0.132,  0.393,  0.431,  0.08 ,  0.103])
+
+To identify the significant [#]_ LISA values we can use numpy indexing:
+
+.. doctest::
+
+        >>> sig = lm.p_sim<0.05
+        >>> lm.p_sim[sig]
+	array([ 0.035,  0.001,  0.007,  0.001,  0.001,  0.002,  0.007,  0.035,
+		0.035,  0.04 ])
+
+and then use this indexing on the q attribute to find out which quadrant of the Moran scatter plot each of the significant values is contained in:
+
+.. doctest::
+
+        >>> lm.q[sig]
+        array([4, 1, 3, 1, 3, 1, 1, 3, 3, 3])
+
+As in the case of global Moran's I, when the variable of interest is rates based on populations with different sizes,
+we need to account for the differences among population to estimate local Moran's Is. 
+Continuing on with the SIDS example above, the adjusted local Moran's Is are obtained with:
+
+.. doctest::
+
+	>>> f = pysal.open(pysal.examples.get_path("sids2.dbf"))
+	>>> b = np.array(f.by_col('BIR79'))
+	>>> e = np.array(f.by_col('SID79'))
+	>>> w = pysal.open(pysal.examples.get_path("sids2.gal")).read()
+        >>> lm = pysal.esda.moran.Moran_Local_Rate(e, b, w)
+        >>> lm.Is[:10]
+        array([-0.13452366, -1.21133985,  0.05019761,  0.06127125, -0.12627466,
+                0.23497679,  0.26345855, -0.00951288, -0.01517879, -0.34513514])
+
+As demonstrated above, significant Moran's Is can be identified by using numpy indexing:
+
+.. doctest::
+
+        >>> sig = lm.p_sim<0.05
+        >>> lm.p_sim[sig]
+        array([ 0.017,  0.03 ,  0.037,  0.024,  0.002,  0.022,  0.03 ,  0.029,
+                0.017,  0.023,  0.015,  0.002])
+
+
+Local G and G*
+--------------
+
+Getis and Ord's G can be localized in two forms: :math:`G_i` and :math:`G^*_i`.
+
+.. math::
+
+        G_i(d) = \frac{\sum_j w_{i,j}(d) y_j - W_i\bar{y}(i)}{s(i)\{[(n-1)S_{1i} - W^2_i]/(n-2)\}^(1/2)}, j \neq i
+
+.. math::
+
+        G^*_i(d) = \frac{\sum_j w_{i,j}(d) y_j - W^*_i\bar{y}}{s\{[(nS^*_{1i}) - (W^*_i)^2]/(n-1)\}^(1/2)}, j = i
+
+where we have :math:`W_i = \sum_{j \neq i} w_{i,j}(d)`, :math:`\bar{y}(i) = \frac{\sum_j y_j}{(n-1)}`, :math:`s^2(i) = \frac{\sum_j y^2_j}{(n-1)} - [\bar{y}(i)]^2`, :math:`W^*_i = W_i + w{i,i}`, :math:`S_{1i} = \sum_j w^2_{i,j} (j \neq i)`, and :math:`S^*_{1i} = \sum_j w^2_{i,j} (\forall j)`, :math:`\bar{y}` and :math:`s^2` denote the usual sample mean and variance of :math:`y`.
+
+Continuing on with the St. Louis example, the :math:`G_i` and :math:`G^*_i` statistics are obtained with:
+
+.. doctest::
+
+        >>> from pysal.esda.getisord import G_Local
+        >>> lg = G_Local(y, dist_w)
+        >>> lg.n
+        78
+        >>> len(lg.Gs)
+        78
+        >>> lgstar = G_Local(y, dist_w, star=True)
+        >>> lgstar.n
+        78
+        >>> len(lgstar.Gs)
+        78
+        
+thus we see 78 :math:`G_i` and :math:`G^*_i` are stored in the vector lg.Gs and lgstar.Gs, respectively. Inference about these values is obtained through conditional randomization as in the case of local Moran's I:
+
+.. doctest::
+
+        >>> lg.p_sim
+	array([ 0.338,  0.05 ,  0.477,  0.017,  0.065,  0.008,  0.101,  0.135,
+		0.065,  0.085,  0.393,  0.269,  0.136,  0.38 ,  0.349,  0.455,
+		0.449,  0.261,  0.414,  0.195,  0.168,  0.001,  0.3  ,  0.035,
+		0.266,  0.364,  0.205,  0.101,  0.242,  0.489,  0.5  ,  0.481,
+		0.002,  0.455,  0.031,  0.094,  0.003,  0.238,  0.262,  0.021,
+		0.101,  0.326,  0.397,  0.282,  0.288,  0.011,  0.038,  0.02 ,
+		0.004,  0.111,  0.028,  0.214,  0.052,  0.329,  0.039,  0.103,
+		0.112,  0.423,  0.28 ,  0.354,  0.392,  0.411,  0.463,  0.44 ,
+		0.35 ,  0.283,  0.252,  0.469,  0.156,  0.152,  0.22 ,  0.415,
+		0.473,  0.137,  0.272,  0.418,  0.071,  0.106])
+
+        >>>
+
+To identify the significant :math:`G_i` values we can use numpy indexing:
+
+.. doctest::
+
+        >>> sig = lg.p_sim<0.05
+        >>> lg.p_sim[sig]
+	array([ 0.017,  0.008,  0.001,  0.035,  0.002,  0.031,  0.003,  0.021,
+                0.011,  0.038,  0.02 ,  0.004,  0.028,  0.039])
+
+
+.. rubric:: Footnotes
+
+.. [#] Source: S. Messner, L. Anselin, D. Hawkins, G. Deane, S. Tolnay, R. Baller (2000). An Atlas of the Spatial Patterning of County-Level Homicide, 1960-1990. Pittsburgh, PA, National Consortium on Violence Research (NCOVR)
+.. [#] Because the permutations are random, results from those presented here may vary if you replicate this example.
+.. [#] Source: Assuncao, R. E. and Reis, E. A. 1999. A new proposal to adjust Moran's I for population density. Statistics in Medicine. 18, 2147-2162.
+.. [#] The n-1 spatial units other than i are used to generate the empirical distribution of the LISA statistics for each i.
+.. [#] Caution is required in interpreting the significance of the LISA statistics due to difficulties with multiple comparisons and a lack of independence across the individual tests. For further discussion see Anselin, L. (1995). "Local indicators of spatial association – LISA". Geographical Analysis, 27, 93-115.
+
