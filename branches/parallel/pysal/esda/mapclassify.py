@@ -11,6 +11,27 @@ import time
 
 K = 5 # default number of classes in any map scheme with this as an argument
 
+KERNEL = """
+__kernel void computeError(__global float* value, __global float* res)
+{
+  int id_x = get_global_id(0);
+  int len = get_global_size(0);
+
+  float sqSum = 0.0f;
+  float sum = 0.0f;
+  int num = 0;
+
+  for(int i = id_x; i < len; ++i)
+  {
+    float val = value[i];
+    sqSum += val * val;
+    sum += val;
+    num += 1;
+    res[(id_x+1)*(len+1)+i+1] = sqSum - sum * sum / num;
+  }
+}
+"""
+
 def quantile(y, k = 4):
     """
     Calculates the quantiles for an array
@@ -360,13 +381,19 @@ def _fisher_jenks_means(values, classes=5, sort=True):
 def _fisher_jenks(values, classes=5, sort=True):
   """
   Our own version of Jenks Optimal (Natural Breaks) algorithm
-  implemented in Python.
+  implemented in Python. The implementation follows the original
+  procedure described in the book, which is a two-phased approach.
+  
+  First phase aims at calculating the variance matrix between the
+  ith and jth element in the data array;
+  Second phase runs iteratively to construct the optimal K-partition
+  from results of K-1 - partitions.
   
   """
 
   if sort:
     values.sort()
-
+  
   t0 = time.time()
   numVal = len(values)
 
@@ -395,6 +422,9 @@ def _fisher_jenks(values, classes=5, sort=True):
       varMat[i][j] = sqVals - sumVals * sumVals / numVals
       if i == 1:
         errorMat[j][1] = varMat[i][j]
+  
+  # t = time.time()
+  # print "The initialization took %.6f secs" % (t - t0)
 
   for cIdx in range(2, classes+1):
     for vl in range(cIdx-1, numVal):
@@ -420,7 +450,7 @@ def _fisher_jenks(values, classes=5, sort=True):
   print t1 - t0
   return pivots
 
-def _pfisher_jenks_means(values, classes=5, sort=True):
+def _pfisher_jenks(values, classes=5, sort=True):
   """
   Parallel Jenks Optimal (Natural Breaks) algorithm implemented in Python.
   The original sequential Python code comes from here:
@@ -432,62 +462,67 @@ def _pfisher_jenks_means(values, classes=5, sort=True):
   assuring heterogeneity among classes.
   
   """
-
   if sort:
     values.sort()
-  mat1 = []
-  for i in range(0,len(values)+1):
-    temp = []
-    for j in range(0,classes+1):
-        temp.append(0)
-    mat1.append(temp)
-  mat2 = []
-  for i in range(0,len(values)+1):
-    temp = []
-    for j in range(0,classes+1):
-        temp.append(0)
-    mat2.append(temp)
-  for i in range(1,classes+1):
-    mat1[1][i] = 1
-    mat2[1][i] = 0
-    for j in range(2,len(values)+1):
-        mat2[j][i] = float('inf')
-  v = 0.0
-  for l in range(2,len(values)+1):
-    s1 = 0.0
-    s2 = 0.0
-    w = 0.0
-    for m in range(1,l+1):
-      i3 = l - m + 1
-      val = float(values[i3-1])
-      s2 += val * val
-      s1 += val
-      w += 1
-      v = s2 - (s1 * s1) / w
-      i4 = i3 - 1
-      if i4 != 0:
-        for j in range(2,classes+1):
-          if mat2[l][j] >= (v + mat2[i4][j - 1]):
-            mat1[l][j] = i3
-            mat2[l][j] = v + mat2[i4][j - 1]
-    mat1[l][1] = 1
-    mat2[l][1] = v
+  
+  t0 = time.time()
+  numVal = len(values)
 
-  k = len(values)
+  import pyopencl as cl
+  
+  errorMat = (numVal+1)*[0]
+  for i in range(numVal+1):
+    errorMat[i] = (classes+1)*[float('inf')]
 
-  kclass = []
-  for i in range(0,classes+1):
-    kclass.append(0)
-  kclass[classes] = float(values[len(values) - 1])
-  kclass[0] = float(values[0])
-  countNum = classes
-  while countNum >= 2:
-    pivot = mat1[k][countNum]
-    id = int(pivot - 2)
-    kclass[countNum - 1] = values[id]
-    k = int(pivot - 1)
-    countNum -= 1
-  return kclass
+  pivotMat = (numVal+1)*[0]
+  for i in range(numVal+1):
+    pivotMat[i] = (classes+1)*[0]
+
+  # tx = time.time()
+  
+  ctx = cl.create_some_context()
+  queue = cl.CommandQueue(ctx)
+  program = cl.Program(ctx, KERNEL).build(['-I ./'])
+  mf = cl.mem_flags
+
+  valArray = np.array(values, dtype=np.float32)
+  varArray = np.zeros((numVal+1, numVal+1), dtype=np.float32)
+
+  valBuf = cl.Buffer(ctx, mf.READ_ONLY|mf.COPY_HOST_PTR, hostbuf=valArray)
+  varBuf = cl.Buffer(ctx, mf.WRITE_ONLY, size=varArray.nbytes)
+
+  program.computeError(queue, valArray.shape, None, valBuf, varBuf).wait()
+  cl.enqueue_copy(queue, varArray, varBuf)
+  del cl
+
+  varMat = varArray.tolist()
+
+  for i in range(1, numVal+1):
+    errorMat[i][1] = varMat[1][i]
+
+  for cIdx in range(2, classes+1):
+    for vl in range(cIdx-1, numVal):
+      preError = errorMat[vl][cIdx-1]
+      for vIdx in range(vl+1, numVal+1):
+        curError = preError + varMat[vl+1][vIdx]
+        if errorMat[vIdx][cIdx] > curError:
+          errorMat[vIdx][cIdx] = curError
+          pivotMat[vIdx][cIdx] = vl
+
+  pivots = (classes+1)*[0]
+  pivots[classes] = values[numVal-1]
+  pivots[0] = values[0]
+  lastPivot = pivotMat[numVal][classes]
+
+  pNum = classes-1
+  while pNum > 0:
+    pivots[pNum] = values[lastPivot - 1]
+    lastPivot = pivotMat[lastPivot][pNum]
+    pNum -= 1
+  
+  t1 = time.time()
+  print t1 - t0
+  return pivots
 
 class Map_Classifier:
     """
@@ -1217,7 +1252,7 @@ class PFisher_Jenks(Map_Classifier):
 
     def _set_bins(self):
         x = self.y.copy()
-        self.bins =  _pfisher_jenks_means(x, classes=self.k)[1:]
+        self.bins =  _pfisher_jenks(x, classes=self.k)[1:]
 
 class Jenks_Caspall(Map_Classifier):
     """
