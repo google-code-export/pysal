@@ -13,8 +13,12 @@ Next steps
 	 - requires nxn variance matrix so not applicable for large n cases
 	 - we could still compare for smaller n
  - parallelize our version
- - random sampling version
- - parallelize random sampling version 
+ 	- cl (done)
+	- multiprocessing 
+	- after mp, see where we are
+ - random sampling version (maybe put on hold)
+ - parallelize random sampling version (put on hold)
+
  - idea for algorithm
 	 - if n < NLARGE
 		 - parallelized decompositional approach
