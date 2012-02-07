@@ -1,3 +1,6 @@
- * 2012-02-07: 1.4 Organization
- * 2012-02-14: Profiling and Optimization
- * 2012-02-21: GeoDaNet Integration
+ 
+|| Date || Topic ||
+|| 2012-02-07 || 1.4 Organization ||
+|| 2012-02-14 || Profiling and Optimization ||
+|| 2012-02-21 || `GeoDaNet` integration ||
+|| 2012-02-28 ||  TBD ||
