@@ -527,7 +527,7 @@ def computeError(args):
         sqSum = sqSum + val * val
         sums = sums + val
         num = num + 1
-        res[(idx+1)*(length+1)+j+1] = sqSum - sums * sums / num
+        res[idx+1][j+1] = sqSum - sums * sums / num
 
 def _pfisher_jenks_mp(values, classes=5, sort=True):
 
@@ -537,7 +537,9 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     t0 = time.time()
     numVal = len(values)
 
-    varMat = (numVal+1)*(numVal+1)*[0]
+    varMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        varMat[i] = (numVal+1)*[0]
 
     errorMat = (numVal+1)*[0]
     for i in range(numVal+1):
@@ -547,7 +549,7 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     for i in range(numVal+1):
         pivotMat[i] = (classes+1)*[0]
     
-    t2 = time.time()
+    t3 = time.time()
     numProc = mp.cpu_count()
     
     """
@@ -563,21 +565,24 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     for j in jobs:
         j.join()
     """
-    mgr = mp.Manager()
-    valList = mgr.list(values.tolist())
-    varMat = mgr.list(varMat)
-    arg = [[valList, i, varMat] for i in range(numVal)]
+    
     pool = mp.Pool(processes=numProc)
-    result = pool.map_async(computeError, arg)
+    args = [[values, i, varMat] for i in range(numVal)]
+    t4 = time.time()
+    print t4 - t3
+    pool.map(computeError, args)
+
+    t2 = time.time()
+    print t2 - t0
 
     for i in range(1, numVal+1):
-        errorMat[i][1] = varMat[numVal+1+i]
+        errorMat[i][1] = varMat[1][i]
 
     for cIdx in range(2, classes+1):
         for vl in range(cIdx-1, numVal):
             preError = errorMat[vl][cIdx-1]
             for vIdx in range(vl+1, numVal+1):
-                curError = preError + varMat[vl*(numVal+1)+vIdx]
+                curError = preError + varMat[vl][vIdx]
                 if errorMat[vIdx][cIdx] > curError:
                     errorMat[vIdx][cIdx] = curError
                     pivotMat[vIdx][cIdx] = vl
