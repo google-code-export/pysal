@@ -8,6 +8,10 @@ __all__=['quantile','Map_Classifier','Box_Plot','Equal_Interval','Fisher_Jenks',
 
 from pysal.common import *
 import time
+import ctypes
+import pyopencl as cl
+import multiprocessing as mp
+from math import sqrt
 
 K = 5 # default number of classes in any map scheme with this as an argument
 
@@ -31,6 +35,7 @@ __kernel void computeError(__global float* value, __global float* res)
   }
 }
 """
+
 
 def quantile(y, k = 4):
     """
@@ -304,225 +309,293 @@ def natural_breaks(values, k = 5, itmax = 100):
     return sids, seeds, diffs, class_ids, solved, it, cuts
 
 def _fisher_jenks_means(values, classes=5, sort=True):
-  """
-  Jenks Optimal (Natural Breaks) algorithm implemented in Python.
-  The original Python code comes from here:
-  http://danieljlewis.org/2010/06/07/jenks-natural-breaks-algorithm-in-python/
-  and is based on a JAVA and Fortran code available here:
-  https://stat.ethz.ch/pipermail/r-sig-geo/2006-March/000811.html
-  
-  Returns class breaks such that classes are internally homogeneous while 
-  assuring heterogeneity among classes.
-  
-  """
+    """
+    Jenks Optimal (Natural Breaks) algorithm implemented in Python.
+    The original Python code comes from here:
+    http://danieljlewis.org/2010/06/07/jenks-natural-breaks-algorithm-in-python/
+    and is based on a JAVA and Fortran code available here:
+    https://stat.ethz.ch/pipermail/r-sig-geo/2006-March/000811.html
 
-  if sort:
-    values.sort()
-  
-  t0 = time.time()
-  mat1 = []
-  for i in range(0,len(values)+1):
-    temp = []
-    for j in range(0,classes+1):
-        temp.append(0)
-    mat1.append(temp)
-  mat2 = []
-  for i in range(0,len(values)+1):
-    temp = []
-    for j in range(0,classes+1):
-        temp.append(0)
-    mat2.append(temp)
-  for i in range(1,classes+1):
-    mat1[1][i] = 1
-    mat2[1][i] = 0
-    for j in range(2,len(values)+1):
-        mat2[j][i] = float('inf')
-  
-  v = 0.0
-  for l in range(2,len(values)+1):
-    s1 = 0.0
-    s2 = 0.0
-    w = 0.0
-    for m in range(1,l+1):
-      i3 = l - m + 1
-      val = float(values[i3-1])
-      s2 += val * val
-      s1 += val
-      w += 1
-      v = s2 - (s1 * s1) / w
-      i4 = i3 - 1
-      if i4 != 0:
-        for j in range(2,classes+1):
-          if mat2[l][j] >= (v + mat2[i4][j - 1]):
-            mat1[l][j] = i3
-            mat2[l][j] = v + mat2[i4][j - 1]
-    mat1[l][1] = 1
-    mat2[l][1] = v
-  
-  k = len(values)
+    Returns class breaks such that classes are internally homogeneous while 
+    assuring heterogeneity among classes.
+    """
+    if sort:
+        values.sort()
 
-  kclass = []
-  for i in range(0,classes+1):
-    kclass.append(0)
-  kclass[classes] = float(values[len(values) - 1])
-  kclass[0] = float(values[0])
-  countNum = classes
-  while countNum >= 2:
-    pivot = mat1[k][countNum]
-    id = int(pivot - 2)
-    kclass[countNum - 1] = values[id]
-    k = int(pivot - 1)
-    countNum -= 1
-
-  t1 = time.time()
-  print t1 - t0
-  return kclass
+    t0 = time.time()
+    mat1 = []
+    for i in range(0,len(values)+1):
+        temp = []
+        for j in range(0,classes+1):
+            temp.append(0)
+        mat1.append(temp)
+    mat2 = []
+    for i in range(0,len(values)+1):
+        temp = []
+        for j in range(0,classes+1):
+            temp.append(0)
+        mat2.append(temp)
+    for i in range(1,classes+1):
+        mat1[1][i] = 1
+        mat2[1][i] = 0
+        for j in range(2,len(values)+1):
+            mat2[j][i] = float('inf')
+    
+    v = 0.0
+    for l in range(2,len(values)+1):
+        s1 = 0.0
+        s2 = 0.0
+        w = 0.0
+        for m in range(1,l+1):
+            i3 = l - m + 1
+            val = float(values[i3-1])
+            s2 += val * val
+            s1 += val
+            w += 1
+            v = s2 - (s1 * s1) / w
+            i4 = i3 - 1
+            if i4 != 0:
+                for j in range(2,classes+1):
+                    if mat2[l][j] >= (v + mat2[i4][j - 1]):
+                        mat1[l][j] = i3
+                        mat2[l][j] = v + mat2[i4][j - 1]
+        mat1[l][1] = 1
+        mat2[l][1] = v
+    
+    k = len(values)
+    
+    kclass = []
+    for i in range(0,classes+1):
+        kclass.append(0)
+    
+    kclass[classes] = float(values[len(values) - 1])
+    kclass[0] = float(values[0])
+    countNum = classes
+    while countNum >= 2:
+        pivot = mat1[k][countNum]
+        id = int(pivot - 2)
+        kclass[countNum - 1] = values[id]
+        k = int(pivot - 1)
+        countNum -= 1
+    t1 = time.time()
+    print t1 - t0
+    return kclass
 
 def _fisher_jenks(values, classes=5, sort=True):
-  """
-  Our own version of Jenks Optimal (Natural Breaks) algorithm
-  implemented in Python. The implementation follows the original
-  procedure described in the book, which is a two-phased approach.
-  
-  First phase aims at calculating the variance matrix between the
-  ith and jth element in the data array;
-  Second phase runs iteratively to construct the optimal K-partition
-  from results of K-1 - partitions.
-  
-  """
+    """
+    Our own version of Jenks Optimal (Natural Breaks) algorithm
+    implemented in Python. The implementation follows the original
+    procedure described in the book, which is a two-phased approach.
 
-  if sort:
-    values.sort()
-  
-  t0 = time.time()
-  numVal = len(values)
+    First phase aims at calculating the variance matrix between the
+    ith and jth element in the data array;
+    Second phase runs iteratively to construct the optimal K-partition
+    from results of K-1 - partitions.
+    """
 
-  varMat = (numVal+1)*[0]
-  for i in range(numVal+1):
-    varMat[i] = (numVal+1)*[0]
+    if sort:
+        values.sort()
 
-  errorMat = (numVal+1)*[0]
-  for i in range(numVal+1):
-    errorMat[i] = (classes+1)*[float('inf')]
+    t0 = time.time()
+    numVal = len(values)
 
-  pivotMat = (numVal+1)*[0]
-  for i in range(numVal+1):
-    pivotMat[i] = (classes+1)*[0]
+    varMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        varMat[i] = (numVal+1)*[0]
 
-  # building up the initial variance matrix
-  for i in range(1, numVal+1):
-    sumVals = 0
-    sqVals = 0
-    numVals = 0
-    for j in range(i, numVal+1):
-      val = float(values[j-1])
-      sumVals += val
-      sqVals += val * val
-      numVals += 1.0
-      varMat[i][j] = sqVals - sumVals * sumVals / numVals
-      if i == 1:
-        errorMat[j][1] = varMat[i][j]
-  
-  # t = time.time()
-  # print "The initialization took %.6f secs" % (t - t0)
+    errorMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        errorMat[i] = (classes+1)*[float('inf')]
 
-  for cIdx in range(2, classes+1):
-    for vl in range(cIdx-1, numVal):
-      preError = errorMat[vl][cIdx-1]
-      for vIdx in range(vl+1, numVal+1):
-        curError = preError + varMat[vl+1][vIdx]
-        if errorMat[vIdx][cIdx] > curError:
-          errorMat[vIdx][cIdx] = curError
-          pivotMat[vIdx][cIdx] = vl
+    pivotMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        pivotMat[i] = (classes+1)*[0]
 
-  pivots = (classes+1)*[0]
-  pivots[classes] = values[numVal-1]
-  pivots[0] = values[0]
-  lastPivot = pivotMat[numVal][classes]
+    # building up the initial variance matrix
+    for i in range(1, numVal+1):
+        sumVals = 0
+        sqVals = 0
+        numVals = 0
+        for j in range(i, numVal+1):
+            val = float(values[j-1])
+            sumVals += val
+            sqVals += val * val
+            numVals += 1.0
+            varMat[i][j] = sqVals - sumVals * sumVals / numVals
+            if i == 1:
+                errorMat[j][1] = varMat[i][j]
 
-  pNum = classes-1
-  while pNum > 0:
-    pivots[pNum] = values[lastPivot - 1]
-    lastPivot = pivotMat[lastPivot][pNum]
-    pNum -= 1
-  
-  t1 = time.time()
-  print t1 - t0
-  return pivots
+    for cIdx in range(2, classes+1):
+        for vl in range(cIdx-1, numVal):
+            preError = errorMat[vl][cIdx-1]
+            for vIdx in range(vl+1, numVal+1):
+                curError = preError + varMat[vl+1][vIdx]
+                if errorMat[vIdx][cIdx] > curError:
+                    errorMat[vIdx][cIdx] = curError
+                    pivotMat[vIdx][cIdx] = vl
+    """
+    for vIdx in range(2, numVal+1):
+        for vl in range(1, vIdx):
+            cNum = min(classes+1, vl)
+            for cIdx in range(2, 
+    """
+    pivots = (classes+1)*[0]
+    pivots[classes] = values[numVal-1]
+    pivots[0] = values[0]
+    lastPivot = pivotMat[numVal][classes]
+
+    pNum = classes-1
+    while pNum > 0:
+        pivots[pNum] = values[lastPivot - 1]
+        lastPivot = pivotMat[lastPivot][pNum]
+        pNum -= 1
+
+    t1 = time.time()
+    print t1 - t0
+    return pivots
 
 def _pfisher_jenks(values, classes=5, sort=True):
-  """
-  Parallel Jenks Optimal (Natural Breaks) algorithm implemented in Python.
-  The original sequential Python code comes from here:
-  http://danieljlewis.org/2010/06/07/jenks-natural-breaks-algorithm-in-python/
-  and is based on a JAVA and Fortran code available here:
-  https://stat.ethz.ch/pipermail/r-sig-geo/2006-March/000811.html
-  
-  Returns class breaks such that classes are internally homogeneous while 
-  assuring heterogeneity among classes.
-  
-  """
-  if sort:
-    values.sort()
-  
-  t0 = time.time()
-  numVal = len(values)
 
-  import pyopencl as cl
-  
-  errorMat = (numVal+1)*[0]
-  for i in range(numVal+1):
-    errorMat[i] = (classes+1)*[float('inf')]
+    if sort:
+        values.sort()
 
-  pivotMat = (numVal+1)*[0]
-  for i in range(numVal+1):
-    pivotMat[i] = (classes+1)*[0]
+    t0 = time.time()
+    numVal = len(values)
 
-  # tx = time.time()
-  
-  ctx = cl.create_some_context()
-  queue = cl.CommandQueue(ctx)
-  program = cl.Program(ctx, KERNEL).build(['-I ./'])
-  mf = cl.mem_flags
+    errorMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        errorMat[i] = (classes+1)*[float('inf')]
 
-  valArray = np.array(values, dtype=np.float32)
-  varArray = np.zeros((numVal+1, numVal+1), dtype=np.float32)
+    pivotMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        pivotMat[i] = (classes+1)*[0]
 
-  valBuf = cl.Buffer(ctx, mf.READ_ONLY|mf.COPY_HOST_PTR, hostbuf=valArray)
-  varBuf = cl.Buffer(ctx, mf.WRITE_ONLY, size=varArray.nbytes)
+    ctx = cl.create_some_context()
+    queue = cl.CommandQueue(ctx)
+    program = cl.Program(ctx, KERNEL).build(['-I ./'])
+    mf = cl.mem_flags
 
-  program.computeError(queue, valArray.shape, None, valBuf, varBuf).wait()
-  cl.enqueue_copy(queue, varArray, varBuf)
-  del cl
+    valArray = np.array(values, dtype=np.float32)
+    varArray = np.zeros((numVal+1, numVal+1), dtype=np.float32)
 
-  varMat = varArray.tolist()
+    valBuf = cl.Buffer(ctx, mf.READ_ONLY|mf.COPY_HOST_PTR, hostbuf=valArray)
+    varBuf = cl.Buffer(ctx, mf.WRITE_ONLY, size=varArray.nbytes)
 
-  for i in range(1, numVal+1):
-    errorMat[i][1] = varMat[1][i]
+    program.computeError(queue, valArray.shape, None, valBuf, varBuf).wait()
+    cl.enqueue_copy(queue, varArray, varBuf)
 
-  for cIdx in range(2, classes+1):
-    for vl in range(cIdx-1, numVal):
-      preError = errorMat[vl][cIdx-1]
-      for vIdx in range(vl+1, numVal+1):
-        curError = preError + varMat[vl+1][vIdx]
-        if errorMat[vIdx][cIdx] > curError:
-          errorMat[vIdx][cIdx] = curError
-          pivotMat[vIdx][cIdx] = vl
+    varMat = varArray.tolist()
 
-  pivots = (classes+1)*[0]
-  pivots[classes] = values[numVal-1]
-  pivots[0] = values[0]
-  lastPivot = pivotMat[numVal][classes]
+    for i in range(1, numVal+1):
+        errorMat[i][1] = varMat[1][i]
 
-  pNum = classes-1
-  while pNum > 0:
-    pivots[pNum] = values[lastPivot - 1]
-    lastPivot = pivotMat[lastPivot][pNum]
-    pNum -= 1
-  
-  t1 = time.time()
-  print t1 - t0
-  return pivots
+    for cIdx in range(2, classes+1):
+        for vl in range(cIdx-1, numVal):
+            preError = errorMat[vl][cIdx-1]
+            for vIdx in range(vl+1, numVal+1):
+                curError = preError + varMat[vl+1][vIdx]
+                if errorMat[vIdx][cIdx] > curError:
+                    errorMat[vIdx][cIdx] = curError
+                    pivotMat[vIdx][cIdx] = vl
+
+    pivots = (classes+1)*[0]
+    pivots[classes] = values[numVal-1]
+    pivots[0] = values[0]
+    lastPivot = pivotMat[numVal][classes]
+
+    pNum = classes-1
+    while pNum > 0:
+        pivots[pNum] = values[lastPivot - 1]
+        lastPivot = pivotMat[lastPivot][pNum]
+        pNum -= 1
+
+    t1 = time.time()
+    print t1 - t0
+    return pivots
+
+def computeError(args):
+    
+    values = args[0]
+    idx = args[1]
+    res = args[2]
+    length = len(values)
+    sqSum = 0.0
+    sums = 0.0
+    num = 0
+    for j in range(idx, length):
+        val = values[j]
+        sqSum = sqSum + val * val
+        sums = sums + val
+        num = num + 1
+        res[(idx+1)*(length+1)+j+1] = sqSum - sums * sums / num
+
+def _pfisher_jenks_mp(values, classes=5, sort=True):
+
+    if sort:
+        values.sort()
+
+    t0 = time.time()
+    numVal = len(values)
+
+    varMat = (numVal+1)*(numVal+1)*[0]
+
+    errorMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        errorMat[i] = (classes+1)*[float('inf')]
+
+    pivotMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        pivotMat[i] = (classes+1)*[0]
+    
+    t2 = time.time()
+    numProc = mp.cpu_count()
+    
+    """
+    mgr = mp.Manager()
+
+    vals = values.tolist()
+    valList = mgr.list(vals)
+    varMat = mgr.list(varMat)
+    
+    jobs = [mp.Process(target=computeError, args=(valList, pivotVals[i], varMat)) for i in range(numProc)]
+    for j in jobs:
+        j.start()
+    for j in jobs:
+        j.join()
+    """
+    mgr = mp.Manager()
+    valList = mgr.list(values.tolist())
+    varMat = mgr.list(varMat)
+    arg = [[valList, i, varMat] for i in range(numVal)]
+    pool = mp.Pool(processes=numProc)
+    result = pool.map_async(computeError, arg)
+
+    for i in range(1, numVal+1):
+        errorMat[i][1] = varMat[numVal+1+i]
+
+    for cIdx in range(2, classes+1):
+        for vl in range(cIdx-1, numVal):
+            preError = errorMat[vl][cIdx-1]
+            for vIdx in range(vl+1, numVal+1):
+                curError = preError + varMat[vl*(numVal+1)+vIdx]
+                if errorMat[vIdx][cIdx] > curError:
+                    errorMat[vIdx][cIdx] = curError
+                    pivotMat[vIdx][cIdx] = vl
+    
+    pivots = (classes+1)*[0]
+    pivots[classes] = values[numVal-1]
+    pivots[0] = values[0]
+    lastPivot = pivotMat[numVal][classes]
+
+    pNum = classes-1
+    while pNum > 0:
+        pivots[pNum] = values[lastPivot - 1]
+        lastPivot = pivotMat[lastPivot][pNum]
+        pNum -= 1
+
+    t1 = time.time()
+    print t1 - t0
+    return pivots
 
 class Map_Classifier:
     """
@@ -1254,6 +1327,52 @@ class PFisher_Jenks(Map_Classifier):
         x = self.y.copy()
         self.bins =  _pfisher_jenks(x, classes=self.k)[1:]
 
+class PFisher_Jenks_MP(Map_Classifier):
+    """
+    Parallel Fisher Jenks Optimal Classifier - mean based
+
+    Parameters
+    ----------
+    y : array (n,1)
+        values to classify
+    k : int
+        number of classes required
+
+    Attributes
+    ----------
+
+    binIds     : array (n,1)
+                 bin ids for observations
+    bins       : array (k,1)
+                 the upper bounds of each class 
+    k          : int
+                 the number of classes
+    binCounts  : array (k,1)
+                 the number of observations falling in each class
+
+
+    Examples
+    --------
+
+    >>> cal = load_example()
+    >>> fj = PFisher_Jenks_MP(cal)
+    >>> fj.adcm
+    799.24000000000001
+    >>> fj.bins
+    [75.290000000000006, 192.05000000000001, 370.5, 722.85000000000002, 4111.45]
+    >>> fj.counts
+    array([49,  3,  4,  1,  1])
+    >>> 
+    """
+    def __init__(self, y, k = K):
+        self.k = k
+        Map_Classifier.__init__(self, y)
+        self.name = "Par_Fisher_Jenks_MP"
+
+    def _set_bins(self):
+        x = self.y.copy()
+        self.bins =  _pfisher_jenks_mp(x, classes=self.k)[1:]
+
 class Jenks_Caspall(Map_Classifier):
     """
     Jenks Caspall  Map Classification
@@ -1271,7 +1390,7 @@ class Jenks_Caspall(Map_Classifier):
     yb      : array (n,1)
               bin ids for observations,
     bins    : array (k,1)
-              the upper bounds of each class 
+              the upper bounds of each class
     k       : int
               the number of classes
     counts  : array (k,1)
