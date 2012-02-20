@@ -11,6 +11,7 @@ import time
 import ctypes
 import pyopencl as cl
 import multiprocessing as mp
+import pp
 from math import sqrt
 
 K = 5 # default number of classes in any map scheme with this as an argument
@@ -517,8 +518,8 @@ def computeError(args):
     
     values = args[0]
     idx = args[1]
-    res = args[2]
     length = len(values)
+    res = (length+1) * [0]
     sqSum = 0.0
     sums = 0.0
     num = 0
@@ -527,7 +528,8 @@ def computeError(args):
         sqSum = sqSum + val * val
         sums = sums + val
         num = num + 1
-        res[idx+1][j+1] = sqSum - sums * sums / num
+        res[j+1] = sqSum - sums * sums / num
+    return idx, res
 
 def _pfisher_jenks_mp(values, classes=5, sort=True):
 
@@ -567,13 +569,16 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     """
     
     pool = mp.Pool(processes=numProc)
-    args = [[values, i, varMat] for i in range(numVal)]
+    args = [[values, i] for i in range(numVal)]
     t4 = time.time()
     print t4 - t3
-    pool.map(computeError, args)
+    results = pool.map(computeError, args)
 
     t2 = time.time()
     print t2 - t0
+    
+    for idx, res in results:
+        varMat[idx+1] = res
 
     for i in range(1, numVal+1):
         errorMat[i][1] = varMat[1][i]
@@ -600,6 +605,97 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
 
     t1 = time.time()
     print t1 - t0
+    return pivots
+
+def computeErrorPP(values, pos):
+    numVal = len(values)
+    res = numpy.zeros((pos[1]-pos[0], numVal+1)).tolist()
+    for idx in range(pos[0], pos[1]):
+        sqSum = 0.0
+        sums = 0.0
+        num = 0
+        for j in range(idx, numVal):
+            val = values[j]
+            sqSum = sqSum + val * val
+            sums = sums + val
+            num = num + 1
+            res[idx-pos[0]][j+1] = sqSum - sums * sums / num
+    return res
+
+def getPivot(length, numProc, lastP):
+    return int(sqrt(0.25+lastP*lastP+lastP+1.0*length*(length+1)/numProc))
+
+def _pfisher_jenks_pp(values, classes=5, sort=True):
+
+    if sort:
+        values.sort()
+
+    t0 = time.time()
+    numVal = len(values)
+    
+    varMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        varMat[i] = (numVal+1)*[0]
+
+    errorMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        errorMat[i] = (classes+1)*[float('inf')]
+
+    pivotMat = (numVal+1)*[0]
+    for i in range(numVal+1):
+        pivotMat[i] = (classes+1)*[0]
+
+    t1 = time.time()
+    ppservers = ()
+    job_server = pp.Server(ppservers=ppservers)
+    numProc = job_server.get_ncpus()
+
+    start = numProc * [0]
+    end = numProc * [0]
+    for id in range(numProc-1):
+        start[id+1] = getPivot(numVal, numProc, start[id])
+        end[id] = start[id+1]
+        print start[id], end[id]
+    end[numProc-1] = numVal
+    print start[numProc-1], end[numProc-1]
+    pos = zip(start, end)
+    
+    jobs = []
+    for position in pos:
+        jobs.append((position, job_server.submit(computeErrorPP, (values, position,), (), ("numpy",))))
+    for position, job in jobs:
+        start, end = position
+        varMat[start:end] = job()
+
+    t2 = time.time()
+    print t2 - t1
+    
+    for i in range(1, numVal+1):
+        errorMat[i][1] = varMat[1][i]
+
+    for cIdx in range(2, classes+1):
+        for vl in range(cIdx-1, numVal):
+            preError = errorMat[vl][cIdx-1]
+            for vIdx in range(vl+1, numVal+1):
+                curError = preError + varMat[vl][vIdx]
+                if errorMat[vIdx][cIdx] > curError:
+                    errorMat[vIdx][cIdx] = curError
+                    pivotMat[vIdx][cIdx] = vl
+    
+    pivots = (classes+1)*[0]
+    pivots[classes] = values[numVal-1]
+    pivots[0] = values[0]
+    lastPivot = pivotMat[numVal][classes]
+
+    pNum = classes-1
+    while pNum > 0:
+        pivots[pNum] = values[lastPivot - 1]
+        lastPivot = pivotMat[lastPivot][pNum]
+        pNum -= 1
+
+    t3 = time.time()
+    print t3 - t0
+    job_server.print_stats()
     return pivots
 
 class Map_Classifier:
@@ -1377,6 +1473,52 @@ class PFisher_Jenks_MP(Map_Classifier):
     def _set_bins(self):
         x = self.y.copy()
         self.bins =  _pfisher_jenks_mp(x, classes=self.k)[1:]
+
+class PFisher_Jenks_PP(Map_Classifier):
+    """
+    Parallel Fisher Jenks Optimal Classifier - mean based
+
+    Parameters
+    ----------
+    y : array (n,1)
+        values to classify
+    k : int
+        number of classes required
+
+    Attributes
+    ----------
+
+    binIds     : array (n,1)
+                 bin ids for observations
+    bins       : array (k,1)
+                 the upper bounds of each class 
+    k          : int
+                 the number of classes
+    binCounts  : array (k,1)
+                 the number of observations falling in each class
+
+
+    Examples
+    --------
+
+    >>> cal = load_example()
+    >>> fj = PFisher_Jenks_PP(cal)
+    >>> fj.adcm
+    799.24000000000001
+    >>> fj.bins
+    [75.290000000000006, 192.05000000000001, 370.5, 722.85000000000002, 4111.45]
+    >>> fj.counts
+    array([49,  3,  4,  1,  1])
+    >>> 
+    """
+    def __init__(self, y, k = K):
+        self.k = k
+        Map_Classifier.__init__(self, y)
+        self.name = "Par_Fisher_Jenks_PP"
+
+    def _set_bins(self):
+        x = self.y.copy()
+        self.bins =  _pfisher_jenks_pp(x, classes=self.k)[1:]
 
 class Jenks_Caspall(Map_Classifier):
     """
