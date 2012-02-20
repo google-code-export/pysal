@@ -63,13 +63,16 @@
 <node CREATED="1329408854471" MODIFIED="1329409090029" TEXT="pysal">
 <node CREATED="1329410861570" MODIFIED="1329410863223" TEXT="history"/>
 <node CREATED="1329410863594" MODIFIED="1329410867671" TEXT="role in this project"/>
-<node CREATED="1329410868042" MODIFIED="1329410869388" TEXT="focus">
-<node CREATED="1329410869389" MODIFIED="1329410873447" TEXT="parallelization"/>
+<node CREATED="1329410868042" ID="ID_1730422358" MODIFIED="1329410869388" TEXT="focus">
+<node CREATED="1329410869389" ID="ID_393822830" MODIFIED="1329410873447" TEXT="parallelization"/>
+<node CREATED="1329758840603" ID="ID_1524725342" MODIFIED="1329758843415" TEXT="role of dt">
+<node CREATED="1329758843738" ID="ID_1449188683" LINK="https://mail.google.com/mail/?shva=1#sent/1359bcd4cca8d23c" MODIFIED="1329759425917" TEXT="slides from Rob"/>
+</node>
 </node>
 </node>
 <node CREATED="1329409090586" MODIFIED="1329409093886" TEXT="parallelization">
 <node CREATED="1329410878018" MODIFIED="1329410882654" TEXT="in general"/>
-<node CREATED="1329410882970" MODIFIED="1329410889598" TEXT="in python"/>
+<node CREATED="1329410882970" ID="ID_51192086" MODIFIED="1329410889598" TEXT="in python"/>
 <node CREATED="1329410950296" MODIFIED="1329410951389" TEXT="pysal">
 <node CREATED="1329410951873" MODIFIED="1329410961239" TEXT="broad set of spatial analyical methods"/>
 <node CREATED="1329410961609" MODIFIED="1329410969015" TEXT="mapping these to forms of parallelization">
@@ -82,8 +85,13 @@
 </node>
 </node>
 <node CREATED="1329409102138" MODIFIED="1329409108734" TEXT="illustration">
-<node CREATED="1329410913913" MODIFIED="1329410917230" TEXT="plisa"/>
-<node CREATED="1329410917753" MODIFIED="1329410923054" TEXT="gpu lisa"/>
+<node CREATED="1329410913913" ID="ID_356463041" MODIFIED="1329410917230" TEXT="plisa">
+<node CREATED="1329759016132" FOLDED="true" ID="ID_1127110995" LINK="https://mail.google.com/mail/?shva=1#search/yan+plisa/12ec61f814ce542c" MODIFIED="1329759355301" TEXT="babak">
+<node CREATED="1329759096945" ID="ID_285669155" MODIFIED="1329759099398" TEXT="import pysal import numpy from datetime import datetime import pp  print str(datetime.time(datetime.now())) + &apos; - Starting the program...&apos;  def run(pid, perm_start, perm_stop):     # Step 01: Creating a 5-nearest spatial weights object     in_shp_file = &apos;./C8P20k_epsg2163.shp&apos;     shp = pysal.open(in_shp_file)     pnt_coords = numpy.array([s for s in shp])     shp.close()     w = pysal.knnW(pnt_coords, k=5)     print &apos; - Step 01 completed...&apos;         # Step 02: Reading z values      in_dbf_file = &apos;./C8P20k_epsg2163.dbf&apos;     dbf = pysal.open(in_dbf_file)     z = numpy.array(dbf.by_col(&apos;z&apos;))     dbf.close()     print &apos; - Step 02 completed...&apos;         # Step 03: Computing local Moran Is     lm = pysal.Moran_Local(z, w, &quot;r&quot;, 99)     Is = lm.Is     p_values = lm.p_sim     cluster_type = lm.q     sig_level = 0.05     cluster_type[p_values &lt; sig_level] = 0     print &apos; - Step 03 completed...&apos;          #Step 04: Writing an output csv file     out_file = &apos;./local_moran_&apos; + str(pid) + &apos;.csv&apos;     f = open(out_file, &apos;w&apos;)     f.write(&apos;x,y,I,p_value,cluster\n&apos;)     for i in xrange(len(pnt_coords)):         x, y = tuple(pnt_coords[i])         I, p, c = Is[i], p_values[i], cluster_type[i]         f.write(&apos;%f6,%f6,%f6,%f6,%i\n&apos; % (x,y,I,p,c))     f.close()  ppservers = ()          job_server = pp.Server(ppservers=ppservers)  print &quot;Starting pp with&quot;, job_server.get_ncpus(), &quot;workers&quot;         for i in range(job_server.get_ncpus()):     f = job_server.submit(run, (i, 0, 99), (pysal.Moran_Local, ), modules=(&quot;numpy&quot;, &quot;pysal&quot;, &quot;datetime&quot;));     print &apos;Process &apos; + str(i) + &apos; started...&apos;  job_server.wait(); job_server.print_stats(); "/>
+</node>
+<node CREATED="1329759341115" ID="ID_430775521" LINK="https://mail.google.com/mail/?shva=1#search/yan+plisa/1359bd4fd9df19eb" MODIFIED="1329759349233" TEXT="request for slide"/>
+</node>
+<node CREATED="1329410917753" ID="ID_1045880028" MODIFIED="1329410923054" TEXT="gpu lisa"/>
 <node CREATED="1329410923625" MODIFIED="1329410926526" TEXT="fisher jenks">
 <node CREATED="1329411354538" MODIFIED="1329411357119" TEXT="algorithm"/>
 <node CREATED="1329411357626" MODIFIED="1329411364001" TEXT="sequential implementations"/>
