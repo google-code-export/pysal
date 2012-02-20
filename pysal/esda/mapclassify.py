@@ -551,7 +551,6 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     for i in range(numVal+1):
         pivotMat[i] = (classes+1)*[0]
     
-    t3 = time.time()
     numProc = mp.cpu_count()
     
     """
@@ -570,13 +569,8 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     
     pool = mp.Pool(processes=numProc)
     args = [[values, i] for i in range(numVal)]
-    t4 = time.time()
-    print t4 - t3
     results = pool.map(computeError, args)
 
-    t2 = time.time()
-    print t2 - t0
-    
     for idx, res in results:
         varMat[idx+1] = res
 
@@ -645,7 +639,6 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     for i in range(numVal+1):
         pivotMat[i] = (classes+1)*[0]
 
-    t1 = time.time()
     ppservers = ()
     job_server = pp.Server(ppservers=ppservers)
     numProc = job_server.get_ncpus()
@@ -667,9 +660,6 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
         start, end = position
         varMat[start:end] = job()
 
-    t2 = time.time()
-    print t2 - t1
-    
     for i in range(1, numVal+1):
         errorMat[i][1] = varMat[1][i]
 
@@ -693,9 +683,8 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
         lastPivot = pivotMat[lastPivot][pNum]
         pNum -= 1
 
-    t3 = time.time()
-    print t3 - t0
-    job_server.print_stats()
+    t1 = time.time()
+    print t1 - t0
     return pivots
 
 class Map_Classifier:
