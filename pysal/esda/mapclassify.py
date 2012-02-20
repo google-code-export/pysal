@@ -648,9 +648,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     for id in range(numProc-1):
         start[id+1] = getPivot(numVal, numProc, start[id])
         end[id] = start[id+1]
-        print start[id], end[id]
     end[numProc-1] = numVal
-    print start[numProc-1], end[numProc-1]
     pos = zip(start, end)
     
     jobs = []
