@@ -566,9 +566,10 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     for j in jobs:
         j.join()
     """
-    
+
+    data = values.tolist()
     pool = mp.Pool(processes=numProc)
-    args = [[values, i] for i in range(numVal)]
+    args = [[data, i] for i in range(numVal)]
     results = pool.map(computeError, args)
 
     for idx, res in results:
@@ -603,7 +604,9 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
 
 def computeErrorPP(values, pos):
     numVal = len(values)
-    res = numpy.zeros((pos[1]-pos[0], numVal+1)).tolist()
+    res = (pos[1]-pos[0]) * [0]
+    for id in range(pos[1] - pos[0]):
+        res[id] = (numVal+1) * [0]
     for idx in range(pos[0], pos[1]):
         sqSum = 0.0
         sums = 0.0
@@ -653,7 +656,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     
     jobs = []
     for position in pos:
-        jobs.append((position, job_server.submit(computeErrorPP, (values, position,), (), ("numpy",))))
+        jobs.append((position, job_server.submit(computeErrorPP, (values, position,))))
     for position, job in jobs:
         start, end = position
         varMat[start:end] = job()
