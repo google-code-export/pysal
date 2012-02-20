@@ -603,6 +603,7 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     return pivots
 
 def computeErrorPP(values, pos):
+    """
     numVal = len(values)
     res = (pos[1]-pos[0]) * [0]
     for id in range(pos[1] - pos[0]):
@@ -617,6 +618,19 @@ def computeErrorPP(values, pos):
             sums = sums + val
             num = num + 1
             res[idx-pos[0]][j+1] = sqSum - sums * sums / num
+    """
+    numVal = len(values)
+    res = (numVal+1)*[0]
+    sqSum = 0.0
+    sums = 0.0
+    num = 0;
+
+    for idx in range(pos, numVal):
+        val = values[idx]
+        sqSum = sqSum + val * val
+        sums = sums + val
+        num = num + 1
+        res[idx+1] = sqSum - sums * sums / num
     return res
 
 def getPivot(length, numProc, lastP):
@@ -646,6 +660,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     job_server = pp.Server(ppservers=ppservers)
     numProc = job_server.get_ncpus()
 
+    """
     start = numProc * [0]
     end = numProc * [0]
     for id in range(numProc-1):
@@ -653,13 +668,24 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
         end[id] = start[id+1]
     end[numProc-1] = numVal
     pos = zip(start, end)
+    """
+    
+    position = range(numVal)
 
+    """
     jobs = []
     for position in pos:
         jobs.append((position, job_server.submit(computeErrorPP, (values, position,))))
     for position, job in jobs:
         start, end = position
         varMat[start:end] = job()
+    """
+
+    jobs = []
+    for pos in position:
+        jobs.append((pos, job_server.submit(computeErrorPP, (values, pos,))))
+    for pos, job in jobs:
+        varMat[pos+1] = job()
 
     for i in range(1, numVal+1):
         errorMat[i][1] = varMat[1][i]
