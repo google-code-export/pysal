@@ -323,7 +323,7 @@ def _fisher_jenks_means(values, classes=5, sort=True):
     if sort:
         values.sort()
 
-    t0 = time.time()
+    #t0 = time.time()
     mat1 = []
     for i in range(0,len(values)+1):
         temp = []
@@ -378,8 +378,8 @@ def _fisher_jenks_means(values, classes=5, sort=True):
         kclass[countNum - 1] = values[id]
         k = int(pivot - 1)
         countNum -= 1
-    t1 = time.time()
-    print t1 - t0
+    #t1 = time.time()
+    #print t1 - t0
     return kclass
 
 def _fisher_jenks(values, classes=5, sort=True):
@@ -460,7 +460,7 @@ def _pfisher_jenks(values, classes=5, sort=True):
     if sort:
         values.sort()
 
-    t0 = time.time()
+    #t0 = time.time()
     numVal = len(values)
 
     errorMat = (numVal+1)*[0]
@@ -510,8 +510,8 @@ def _pfisher_jenks(values, classes=5, sort=True):
         lastPivot = pivotMat[lastPivot][pNum]
         pNum -= 1
 
-    t1 = time.time()
-    print t1 - t0
+    #t1 = time.time()
+    #print t1 - t0
     return pivots
 
 def computeError(args):
@@ -536,7 +536,7 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     if sort:
         values.sort()
 
-    t0 = time.time()
+    #t0 = time.time()
     numVal = len(values)
 
     varMat = (numVal+1)*[0]
@@ -598,8 +598,8 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
         lastPivot = pivotMat[lastPivot][pNum]
         pNum -= 1
 
-    t1 = time.time()
-    print t1 - t0
+    #t1 = time.time()
+    #print t1 - t0
     return pivots
 
 def computeErrorPP(values, pos):
@@ -627,7 +627,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     if sort:
         values.sort()
 
-    t0 = time.time()
+    #t0 = time.time()
     numVal = len(values)
     
     varMat = (numVal+1)*[0]
@@ -685,8 +685,9 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
         lastPivot = pivotMat[lastPivot][pNum]
         pNum -= 1
 
-    t1 = time.time()
-    print t1 - t0
+    #t1 = time.time()
+    #print t1 - t0
+    job_server.destroy()
     return pivots
 
 class Map_Classifier:
