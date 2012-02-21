@@ -654,9 +654,10 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     end[numProc-1] = numVal
     pos = zip(start, end)
 
+    data = values.tolist()
     jobs = []
     for position in pos:
-        jobs.append((position, job_server.submit(computeErrorPP, (values, position,))))
+        jobs.append((position, job_server.submit(computeErrorPP, (data, position,))))
     for position, job in jobs:
         start, end = position
         varMat[start:end] = job()

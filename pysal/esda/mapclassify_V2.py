@@ -680,10 +680,11 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
         start, end = position
         varMat[start:end] = job()
     """
-
+    
+    data = values.tolist()
     jobs = []
     for pos in position:
-        jobs.append((pos, job_server.submit(computeErrorPP, (values, pos,))))
+        jobs.append((pos, job_server.submit(computeErrorPP, (data, pos,))))
     for pos, job in jobs:
         varMat[pos+1] = job()
 
