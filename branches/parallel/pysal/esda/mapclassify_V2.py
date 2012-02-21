@@ -713,6 +713,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
 
     t1 = time.time()
     print t1 - t0
+    job_server.destroy()
     return pivots
 
 class Map_Classifier:

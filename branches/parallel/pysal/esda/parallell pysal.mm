@@ -2,7 +2,7 @@
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
 <node CREATED="1329408682020" ID="ID_1481318209" LINK="../../../../../../../nsf/cyber10/cyber%20infrastructure%20nsf.mm" MODIFIED="1329413769265" TEXT="parallell pysal">
 <node CREATED="1329408686020" MODIFIED="1329408690408" POSITION="left" TEXT="plisa implementation"/>
-<node CREATED="1329408690900" MODIFIED="1329408696456" POSITION="left" TEXT="fisher jenks optimization">
+<node CREATED="1329408690900" ID="ID_1199434912" MODIFIED="1329408696456" POSITION="left" TEXT="fisher jenks optimization">
 <node CREATED="1329409285132" MODIFIED="1329409298384" TEXT="original implementation"/>
 <node CREATED="1329409298877" MODIFIED="1329409314785" TEXT="other implementation"/>
 <node CREATED="1329409316261" MODIFIED="1329409326196" TEXT="parallel implementations">
@@ -54,8 +54,8 @@
 </node>
 </node>
 </node>
-<node CREATED="1329408846583" MODIFIED="1329408850017" POSITION="left" TEXT="aag 2012">
-<node CREATED="1329408850550" MODIFIED="1329408853778" TEXT="presentation outline">
+<node CREATED="1329408846583" ID="ID_1150394529" MODIFIED="1329408850017" POSITION="left" TEXT="aag 2012">
+<node CREATED="1329408850550" ID="ID_881412052" MODIFIED="1329408853778" TEXT="presentation outline">
 <node CREATED="1329409094682" MODIFIED="1329409096822" TEXT="project">
 <node CREATED="1329410846978" MODIFIED="1329410855839" TEXT="overview"/>
 <node CREATED="1329410857082" MODIFIED="1329410860040" TEXT="asu components"/>
@@ -111,6 +111,12 @@
 <node CREATED="1329409109218" MODIFIED="1329409111845" TEXT="future directions">
 <node CREATED="1329412574965" ID="ID_938617055" MODIFIED="1329412578522" TEXT="random sampling"/>
 </node>
+</node>
+<node CREATED="1329827263566" ID="ID_617674810" LINK="../../../../../../../nsf/cyber10/publications/SpringerBook-CyberGIS-WangGoodchild-cfp.pdf" MODIFIED="1329827279110" TEXT="book chapter call">
+<node CREATED="1329827472247" ID="ID_1847540535" MODIFIED="1329827504893" TEXT="extended abstract (1000 words) May 7, 2012"/>
+<node CREATED="1329827505401" ID="ID_683816748" MODIFIED="1329827529157" TEXT="Acceptance Notice June 1, 2012"/>
+<node CREATED="1329827529851" ID="ID_1848942453" MODIFIED="1329827545478" TEXT="Final Draft August 31, 2012"/>
+<node CREATED="1329827546251" ID="ID_393832269" MODIFIED="1329827558685" TEXT="Publication January 2013"/>
 </node>
 </node>
 </node>
