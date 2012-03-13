@@ -7,7 +7,7 @@
 || 2012-03-06 ||  [http://pysal.geodacenter.org/dev/developers/py3k.html Python 3.0] and [iPythonNotebook] ||
 || 2012-03-13 ||  `GeoDaNet` integration ||
 || 2012-03-20 || Spring Break ||
-|| 2012-03-27 ||  TBD ||
+|| 2012-03-27 || `GeoDaNet` integration ||
 || 2012-04-03 ||  TBD ||
 || 2012-04-10 ||  TBD ||
 || 2012-04-17 ||  TBD ||
