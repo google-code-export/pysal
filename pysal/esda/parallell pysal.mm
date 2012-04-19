@@ -118,6 +118,11 @@
 <node CREATED="1329827529851" ID="ID_1848942453" MODIFIED="1329827545478" TEXT="Final Draft August 31, 2012"/>
 <node CREATED="1329827546251" ID="ID_393832269" MODIFIED="1329827558685" TEXT="Publication January 2013"/>
 </node>
+<node CREATED="1330357928342" ID="ID_835812419" MODIFIED="1330357933738" TEXT="things to add from aag">
+<node CREATED="1330357934147" ID="ID_1542480223" MODIFIED="1330357953378" TEXT="look if there are particular tails = process that hang multiprocessing"/>
+<node CREATED="1330357953721" ID="ID_553924735" MODIFIED="1330357966114" TEXT="see if chunking can be done more efficiently"/>
+<node CREATED="1330357968434" ID="ID_7345540" MODIFIED="1330358018644" TEXT="explore changing the number of processors"/>
+</node>
 </node>
 </node>
 </map>
