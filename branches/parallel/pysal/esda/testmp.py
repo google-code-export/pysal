@@ -5,6 +5,7 @@ import time
 np.random.seed(100)
 
 ns = [125,250,500,1000,2000,4000,8000,16000]
+#ns = [16000]
 ks = [ 5, 7, 9]
 
 results = np.zeros((len(ns),len(ks)))
