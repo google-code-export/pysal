@@ -571,6 +571,7 @@ def _pfisher_jenks_mp(values, classes=5, sort=True):
     pool = mp.Pool(processes=numProc)
     args = [[data, i] for i in range(numVal)]
     results = pool.map(computeError, args)
+    pool.close()
 
     for idx, res in results:
         varMat[idx+1] = res
