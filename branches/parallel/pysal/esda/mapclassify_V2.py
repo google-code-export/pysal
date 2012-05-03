@@ -309,7 +309,8 @@ def natural_breaks(values, k = 5, itmax = 100):
     cuts = [max(values[c1 == c]) for c in rk]
     return sids, seeds, diffs, class_ids, solved, it, cuts
 
-def _fisher_jenks_means(values, classes=5, sort=True):
+def _fisher_jenks_means(values, classes=5, sort=True,
+        full_return=False):
     """
     Jenks Optimal (Natural Breaks) algorithm implemented in Python.
     The original Python code comes from here:
@@ -343,6 +344,7 @@ def _fisher_jenks_means(values, classes=5, sort=True):
             mat2[j][i] = float('inf')
     
     v = 0.0
+    t0 = time.time()
     for l in range(2,len(values)+1):
         s1 = 0.0
         s2 = 0.0
@@ -362,6 +364,7 @@ def _fisher_jenks_means(values, classes=5, sort=True):
                         mat2[l][j] = v + mat2[i4][j - 1]
         mat1[l][1] = 1
         mat2[l][1] = v
+    t1 = time.time()
     
     k = len(values)
     
@@ -378,9 +381,14 @@ def _fisher_jenks_means(values, classes=5, sort=True):
         kclass[countNum - 1] = values[id]
         k = int(pivot - 1)
         countNum -= 1
-    t1 = time.time()
-    print t1 - t0
-    return kclass
+    t2 = time.time()
+    print 'stage 1:', t1 - t0
+    print 'stage 2:', t2 - t1
+
+    if full_return:
+        return kclass, mat1, mat2
+    else:
+        return kclass
 
 def _fisher_jenks(values, classes=5, sort=True):
     """
@@ -393,11 +401,11 @@ def _fisher_jenks(values, classes=5, sort=True):
     Second phase runs iteratively to construct the optimal K-partition
     from results of K-1 - partitions.
     """
+    t0 = time.time()
 
     if sort:
         values.sort()
 
-    t0 = time.time()
     numVal = len(values)
 
     varMat = (numVal+1)*[0]
@@ -412,6 +420,7 @@ def _fisher_jenks(values, classes=5, sort=True):
     for i in range(numVal+1):
         pivotMat[i] = (classes+1)*[0]
 
+    t1 = time.time()
     # building up the initial variance matrix
     for i in range(1, numVal+1):
         sumVals = 0
@@ -426,6 +435,7 @@ def _fisher_jenks(values, classes=5, sort=True):
             if i == 1:
                 errorMat[j][1] = varMat[i][j]
 
+    t2 = time.time()
     for cIdx in range(2, classes+1):
         for vl in range(cIdx-1, numVal):
             preError = errorMat[vl][cIdx-1]
@@ -434,6 +444,7 @@ def _fisher_jenks(values, classes=5, sort=True):
                 if errorMat[vIdx][cIdx] > curError:
                     errorMat[vIdx][cIdx] = curError
                     pivotMat[vIdx][cIdx] = vl
+    t3 = time.time()
     """
     for vIdx in range(2, numVal+1):
         for vl in range(1, vIdx):
@@ -451,8 +462,12 @@ def _fisher_jenks(values, classes=5, sort=True):
         lastPivot = pivotMat[lastPivot][pNum]
         pNum -= 1
 
-    t1 = time.time()
-    print t1 - t0
+    t4 = time.time()
+    print 'preallocation:     ', t1 - t0
+    print 'diameter matrix:   ', t2 - t1
+    print 'error matrix:      ', t3 - t2
+    print 'cluster id:        ', t4 - t3
+    print 'diameter pct: ', (t2-t1)/(t4-t0)
     return pivots
 
 def _pfisher_jenks(values, classes=5, sort=True):
@@ -515,6 +530,19 @@ def _pfisher_jenks(values, classes=5, sort=True):
     return pivots
 
 def computeError(args):
+    """ 
+    Compute diameter of clusters
+
+    Arguments
+    ---------
+
+    args: tuple
+         args[0]: list of values
+         args[1]: index of where to start cluster diameter calculations
+
+
+
+    """
     
     values = args[0]
     idx = args[1]
@@ -685,6 +713,7 @@ def _pfisher_jenks_pp(values, classes=5, sort=True):
     data = values.tolist()
     jobs = []
     for pos in position:
+        print pos
         jobs.append((pos, job_server.submit(computeErrorPP, (data, pos,))))
     for pos, job in jobs:
         varMat[pos+1] = job()
@@ -2276,4 +2305,11 @@ def _test():
     doctest.testmod(verbose = True)
 
 if __name__ == '__main__':
-    _test()
+    #_test()
+
+    # data from hartigan 1975
+
+    x=[12,10.8, 11, 10.8, 10.8, 10.8, 10.6, 10.8, 10.3, 10.3, 10.3, 10.4,
+            10.5, 10.2, 10.0, 9.9]
+    x = np.array(x)
+
