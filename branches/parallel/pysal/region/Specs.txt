@@ -1,0 +1,49 @@
+The current algorithm was implemented with the following phases:
+
+1.	Generating initial solutions.
+	Approach:
+		Perform the function of generating initial solution multiple times,
+		constrained by variable "initial". and keep track of the previous optimal solution.
+		After each run, compare current obj function with that of the previous optimum.
+		If current is better, update the previous optimum.
+		
+		In generating an individual solution, follow the steps below:
+		1) Selecting a random area that hasn't been assigned a region, assign it with a new region
+		2) Identifying all neighborhood areas of new region, and do the following:
+			Include the neighborhood area into the new region if this move improves the homogeneity.
+			If a move is made, update the neighborhoods.
+		3) Repeat step 2) until no improvement can be made to the current area.
+		4) Repeat step 1) - 3) until no new regions can be generated.
+		5) For those areas left behind (as is called enclaves), first identify all adjacent regions,
+			then assign the current enclave to the region which produces the most improvement in obj value.
+			Repeat this step until all enclaves have been assigned. Stop.
+
+	Potential of Parallelization:
+		Can be parallelized. Each process can take up a percentage of tasks, roughly numTask = initial / numProcess
+
+2.	Swap to get optimality.
+	Approach:
+		The swap was performed with the following two-level loop:
+		Outer Loop: Select all regions that have been modifed/swapped. If no, exit the swap.
+					Otherwise, shuffle the selected regions, and initialize state variables.
+			Inner Loop: This loop will iterate through all regions selected in the outer loop,
+						and in each iteration it will perform the following steps:
+						1) Identify all areas/cells that are adjacent to the current region,
+							check if they all satisfy floor variable constraint and keep the eligible areas.
+						2) If no eligible areas left in step 1), continue to the next region.
+							Otherwise, iterate through all candidate areas and calculate the obj function value
+							before and after the potential move. Keep track of the best move which results in 
+							most improvement in the obj function.
+						3) If no potentially best move (which implies no move is feasible), exit the inner loop.
+							Otherwise, perform the best move and reassign the related area into the current region.
+							Label the current and previous region of the best area as having been modified.
+	
+	Potential problems: the way to regard unlabeled regions as being not feasible for further swap
+	
+	Potential of Parallelization:
+		Inner process is not clear yet whether it can be parallelized.
+		However, can adopt parallel processing to explore all configurations of swapping.
+		Specifically, each process would start with a different permutation of regions, and would potentially
+		perform a unique sequence of swapping compared to other processes. In such a way, we can hopefully explore
+		more possibilities in this process and approach closer to the global optimum.
+		
