@@ -1,5 +1,5 @@
 #release announcement for 1.4
-== PySAL 1.4 Released (2012-07-31 ==
+== PySAL 1.4 Released (2012-07-31) ==
 
 On behalf of the PySAL development team, I'm happy to announce the
 official release of PySAL 1.4.
