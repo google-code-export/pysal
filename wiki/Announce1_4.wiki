@@ -37,8 +37,7 @@ PySAL modules
     * pysal.spreg - Regression and Diagnostics
     * pysal.region — Spatially Constrained Clustering
     * pysal.weights — Spatial Weights
-    * pysal.FileIO — PySAL FileIO: Module for reading and writing
-various file types in a Pythonic way
+    * pysal.FileIO — PySAL FileIO: Module for reading and writing various file types in a Pythonic way
 
 Downloads
 --------------
@@ -78,6 +77,6 @@ See the file "LICENSE.txt" for information on the history of this
 software, terms & conditions for usage, and a DISCLAIMER OF ALL
 WARRANTIES.
 
-Many thanks to all who contributed!
+Many thanks to [http://code.google.com/p/pysal/source/browse/tags/1.4/THANKS.txt all who contributed!]
 
 Serge, on behalf of the PySAL development team.
