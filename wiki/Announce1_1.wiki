@@ -1,4 +1,4 @@
-=GeoDa Center releases PySAL 1.1.0=
+=PySAL 1.1.0 Released=
 
 01/31/2011
 We are pleased to announce the release of PySAL 1.1.0.
