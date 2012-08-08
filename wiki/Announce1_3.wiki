@@ -30,15 +30,15 @@ along with many bug fixes and smaller enhancements.
 PySAL modules
 -------------
 
-   - pysal.core — Core Data Structures and IO
-   - pysal.cg — Computational Geometry
-   - pysal.esda — Exploratory Spatial Data Analysis
-   - pysal.inequality — Spatial Inequality Analysis
-   - pysal.spatial_dynamics — Spatial Dynamics
-   - pysal.spreg - Regression and Diagnostics
-   - pysal.region — Spatially Constrained Clustering
-   - pysal.weights — Spatial Weights
-   - pysal.FileIO — PySAL FileIO: Module for reading and writing
+   * pysal.core — Core Data Structures and IO
+   * pysal.cg — Computational Geometry
+   * pysal.esda — Exploratory Spatial Data Analysis
+   * pysal.inequality — Spatial Inequality Analysis
+   * pysal.spatial_dynamics — Spatial Dynamics
+   * pysal.spreg - Regression and Diagnostics
+   * pysal.region — Spatially Constrained Clustering
+   * pysal.weights — Spatial Weights
+   * pysal.FileIO — PySAL FileIO: Module for reading and writing
 various file types in a Pythonic way
    - pysal.contrib — Contributed Modules
 
