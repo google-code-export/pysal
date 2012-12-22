@@ -1,0 +1,92 @@
+.. _release:
+.. role:: strike
+
+************************
+PySAL Release Management
+************************
+
+Preparing a release
+===================
+
+Get ready to tag
+----------------
+
+- Check all tests pass.
+
+- Edit CHANGELOG using svn2cl.sh script.
+
+- Edit THANKS and README if needed.
+
+- Change MAJOR, MINOR version in setup script.
+
+- Change pysal/version.py to non-dev number
+
+- Change the docs version from X.xdev to X.x by editing trunk/doc/source/conf.py in two places.
+
+- Commit all changes.
+
+Tag and build
+-------------
+
+Create the Tag::
+
+  $ svn copy https://pysal.googlecode.com/svn/trunk \
+   https://pysal.googlecode.com/svn/tags/X.x -m "Release X.x"
+
+Checkout the newly created Tag on each build machine::
+
+  $ svn checkout http://pysal.googlecode.com/svn/tags/<X.x>
+
+Make the html docs:: 
+
+  $ cd tags/X.x/doc/
+  $ make html 
+
+Create a new directory on doc server and copy new docs to it::
+  
+  $ mkdir -p /srv/www/pysal/public_html/<X.x>
+  $ rsync -ruz doc/build/html/ geodacenter.org:/srv/www/pysal/public_html/<X.x>  (no trailing slash!)
+
+Make a source distribution for the build platform you're using::
+
+  $ cd tags/X.x/
+  $ python setup.py sdist  
+
+A good reference is http://docs.python.org/distutils/sourcedist.html
+
+To make a graphical Windows installer on a Windows box:: 
+
+  $ cd tags/X.x/
+  $ python setup.py bdist_wininst
+   
+
+Release
+-------
+
+- Upload releases and zipped docs to http://code.google.com/p/pysal/downloads
+
+- Update the release on the Python Package Index
+   - open a new release tarball to get PKG-INFO from top level pysal directory
+   - go to http://pypi.python.org/pypi?:action=submit_form
+   - pick option 2 to upload the PKG-INFO 
+
+
+Announce
+--------
+- Draft and distribute press release on geodacenter.asu.edu, openspace-list, and pysal.org
+
+  - On GeoDa center website, do this:
+   - Create a news item (copy the openspace announcement and designate a custom URL)
+   - "List" Content and filter by "Featured Project". Choose to 'edit' PySAL and then modify the short text there.
+   - If you click PySAL, you'll be directed to the PySAL project page, where you can edit the text there.
+
+- Add link to released docs on Google Code site (pysal.geodacenter.org/<X.x>/index.html)
+
+Put trunk back to dev
+---------------------
+- Change MAJOR, MINOR version in setup script.
+
+- Change pysal/version.py to dev number
+
+- Change the docs version from X.x to X.xdev by editing trunk/doc/source/conf.py in two places.
+
