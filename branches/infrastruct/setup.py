@@ -20,6 +20,20 @@ from setuptools import setup, find_packages
 from pysal.version import version as dversion
 #version = '1.3.x'
 
+#for tox
+from setuptools.command.test import test as TestCommand
+
+class Tox(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args= []
+        self.test_suite = True
+    def run_tests(self):
+        import tox
+        errno = tox.cmdline(self.test_args)
+        sys.exit(errno)
+
+
 CLASSIFIERS = """\
 Development Status :: 5 - Production/Stable
 Intended Audience :: Science/Research
@@ -108,52 +122,13 @@ def setup_package():
         version = dversion,
         license = LICENSE,
         classifiers = CLASSIFIERS,
+        #test_suite = 'nose.collector',
+        tests_require = ['tox'],
+        cmdclass = {'test': Tox},
         packages = find_packages(), 
-        package_data = {'pysal':['examples/*'] },
+        package_data = {'pysal':['examples/*'], 'doc':['source/*'] },
         requires = ['scipy'],
         )
-    '''
-    packages = ['pysal', 
-        'pysal.cg',
-        'pysal.cg.tests',
-        'pysal.contrib', 
-        'pysal.contrib.weights_viewer', 
-        'pysal.core', 
-        'pysal.core.tests', 
-        'pysal.core.util', 
-        'pysal.core.util.tests', 
-        'pysal.core.IOHandlers', 
-        'pysal.esda', 
-        'pysal.esda.tests', 
-        'pysal.examples', 
-        'pysal.inequality',
-        'pysal.inequality.tests',
-        'pysal.spatial_dynamics',
-        'pysal.spatial_dynamics.tests',
-        'pysal.spreg',
-        'pysal.spreg.tests',
-        'pysal.region',
-        'pysal.region.tests',
-        'pysal.weights',
-        'pysal.weights.tests'],
-    '''
-    #configuration = configuration
-        
-            
 
 if __name__ == '__main__':
     setup_package()
-    '''
-    def configuration(parent_package='', top_path=None):
-        from numpy.distutils.misc_util import Configuration
-        config = Configuration(None, parent_package, top_path)
-        config.set_options(ignore_setup_xxx_py=True, 
-                assume_default_configuration=True,
-                delegate_options_to_subpackages=True,
-                quiet=True)
-
-        config.add_subpackage('pysal')
-        config.add_data_files(('pysal', '*.txt'))
-        config.get_version('pysal/version.py')
-        return config
-    '''
