@@ -1,0 +1,9 @@
+:mod:`pysal.spreg` --- Regression and Diagnostics
+=================================================
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
+

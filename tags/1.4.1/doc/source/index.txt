@@ -1,0 +1,74 @@
+.. pysal documentation master file, created by
+   sphinx-quickstart on Wed Aug 26 19:58:20 2009.
+
+*******
+Welcome
+*******
+
+PySAL is an `open source <http://code.google.com/p/pysal/>`_  cross-platform library of spatial analysis functions written in
+Python. It is intended to support the development of high level applications
+for spatial analysis.
+
+
+****************
+Getting Involved
+****************
+
+Prospective developers can learn more in the :doc:`developer guide
+</developers/index>`.
+
+You can track PySAL development, submit bug reports, and make feature requests 
+`here <http://code.google.com/p/pysal/issues/list>`_. 
+
+Downloads are `here <http://code.google.com/p/pysal/downloads/list>`_.
+
+*************
+Documentation
+*************
+
+    :Release: |version|
+    :Date: |today|
+
+.. toctree::
+    :maxdepth: 1
+
+    users/index
+    developers/index
+    library/index
+
+****
+News
+****
+
+(2012-07-31) `PySAL 1.4.0 released  <http://pysal.geodacenter.org/1.4/users/installation.html>`_
+
+(2012-01-31) `PySAL 1.3.0 released  <http://pysal.geodacenter.org/1.3/users/installation.html>`_
+
+(2011-07-31) `PySAL 1.2.0 released <http://pysal.geodacenter.org/1.2/users/installation.html>`_
+
+
+(2011-01-31) `PySAL 1.1.0 released <http://pysal.geodacenter.org/1.1/users/installation.html>`_
+
+(2010-07-31) `PySAL 1.0.0 released <http://pysal.geodacenter.org/1.0/users/installation.html>`_
+
+
+(2010-01-6) New Website for PySAL!
+
+(2009-11-03) `National Institute of Justice funding <http://geoplan.asu.edu/node/3855>`_
+
+
+*******
+Funding
+*******
+
+National Science Foundation `CyberGIS Software Integration for Sustained Geospatial Innovation <http://geodacenter.asu.edu/about/news/NSF_Cyber_Award>`_
+
+National Institute of Justice `Flexible Geospatial Visual Analytics and Simulation Technologies to Enhance Criminal Justice Decision Support Systems <http://geoplan.asu.edu/node/3855>`_
+
+National Institutes of Health `Geospatial Factors and Impacts: Measurement and Use (R01CA126858-02) <http://geodacenter.asu.edu/rti>`_
+
+National Science Foundation `An Exploratory Space-Time Data Analysis Toolit for Spatial Social Science Research (0433132) <http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=0433132>`_ 
+
+National Science Foundation `Hedonic Models of Location Decisions with Applications to Geospatial Microdata (0852261) <http://www.nsf.gov/awardsearch/showAward.do?AwardNumber=0852261>`_
+
+
