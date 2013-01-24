@@ -3,9 +3,10 @@
 =============================================================
 
 """
-__author__ = "Sergio J. Rey <srey@asu.edu>"
 
-__all__ = ['steady_state', 'fmpt']
+__author__  = "Sergio J. Rey <srey@asu.edu> "
+
+__all__=['steady_state','fmpt']
 
 import numpy as np
 import numpy.linalg as la
@@ -50,16 +51,15 @@ def steady_state(P):
 
     """
 
-    v, d = la.eig(np.transpose(P))
+    v,d=la.eig(np.transpose(P))
 
     # for a regular P maximum eigenvalue will be 1
-    mv = max(v)
+    mv=max(v)
     # find its position
-    i = v.tolist().index(mv)
+    i=v.tolist().index(mv)
 
     # normalize eigenvector corresponding to the eigenvalue 1
-    return d[:, i] / sum(d[:, i])
-
+    return d[:,i]/sum(d[:,i])
 
 def fmpt(P):
     """
@@ -82,8 +82,8 @@ def fmpt(P):
 
     Examples
     --------
-
-
+    
+    
 
     >>> import numpy as np
     >>> p=np.matrix([[.5, .25, .25],[.5,0,.5],[.25,.25,.5]])
@@ -100,7 +100,7 @@ def fmpt(P):
     experience a change in the weather (either rain or snow) in 2.67 days from
     today. (That wicked witch can only die once so I reckon that is the
     ultimate absorbing state).
-
+    
     Notes
     -----
 
@@ -108,23 +108,25 @@ def fmpt(P):
 
     References
     ----------
-
+    
     .. [1] Kemeny, John, G. and J. Laurie Snell (1976) Finite Markov
        Chains. Springer-Verlag. Berlin
     """
-    A = np.zeros_like(P)
-    ss = steady_state(P)
-    k = ss.shape[0]
+    A=np.zeros_like(P)
+    ss=steady_state(P)
+    k=ss.shape[0]
     for i in range(k):
-        A[:, i] = ss
-    A = A.transpose()
-    I = np.identity(k)
-    Z = la.inv(I - P + A)
-    E = np.ones_like(Z)
-    D = np.diag(1. / np.diag(A))
-    Zdg = np.diag(np.diag(Z))
-    M = (I - Z + E * Zdg) * D
+        A[:,i]=ss
+    A=A.transpose()
+    I=np.identity(k)
+    Z=la.inv(I-P+A)
+    E=np.ones_like(Z)
+    D=np.diag(1./np.diag(A))
+    Zdg=np.diag(np.diag(Z))
+    M=(I-Z+E*Zdg)*D
     return M
+
+
 
 
 def var_fmpt(P):
@@ -157,7 +159,7 @@ def var_fmpt(P):
             [  6.88888889,  12.        ,   5.58333333]])
 
 
-
+    
     Notes
     -----
 
@@ -165,21 +167,28 @@ def var_fmpt(P):
 
     References
     ----------
-
+    
     .. [1] Kemeny, John, G. and J. Laurie Snell (1976) Finite Markov
        Chains. Springer-Verlag. Berlin
 
     """
-    A = P ** 1000
-    n, k = A.shape
-    I = np.identity(k)
-    Z = la.inv(I - P + A)
-    E = np.ones_like(Z)
-    D = np.diag(1. / np.diag(A))
-    Zdg = np.diag(np.diag(Z))
-    M = (I - Z + E * Zdg) * D
-    ZM = Z * M
-    ZMdg = np.diag(np.diag(ZM))
-    W = M * (2 * Zdg * D - I) + 2 * (ZM - E * ZMdg)
-    return W - np.multiply(M, M)
+    A=P**1000
+    n,k=A.shape
+    I=np.identity(k)
+    Z=la.inv(I-P+A)
+    E=np.ones_like(Z)
+    D=np.diag(1./np.diag(A))
+    Zdg=np.diag(np.diag(Z))
+    M=(I-Z+E*Zdg)*D
+    ZM=Z*M
+    ZMdg=np.diag(np.diag(ZM))
+    W=M*(2*Zdg*D-I)+2*(ZM-E*ZMdg)
+    return W-np.multiply(M,M)
 
+
+def _test():
+    import doctest
+    doctest.testmod(verbose=True)
+
+if __name__ == '__main__':
+    _test()

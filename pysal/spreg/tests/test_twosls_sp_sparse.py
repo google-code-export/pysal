@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pysal
-from pysal.spreg.twosls_sp import BaseGM_Lag, GM_Lag
+from pysal.spreg.twosls_sp import GM_Lag, BaseGM_Lag
 import pysal.spreg.diagnostics as D
 from scipy import sparse as SP
 

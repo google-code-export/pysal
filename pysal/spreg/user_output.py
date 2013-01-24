@@ -55,7 +55,7 @@ def set_name_y(name_y):
         name_y = 'dep_var'
     return name_y
 
-def set_name_x(name_x, x, constant=False):
+def set_name_x(name_x, x, regi=False):
     """Set the independent variable names in regression; return generic name if user
     provides no explicit name."
 
@@ -67,9 +67,9 @@ def set_name_x(name_x, x, constant=False):
 
     x           : array
                   User provided exogenous variables.
-    constant    : boolean
-                  If False (default), constant name not included in name_x list yet
-                  Append 'CONSTANT' at the front of the names
+    regi        : boolean
+                  If False (default), append 'CONSTANT' at the front of the
+                  names
 
     Returns
     -------
@@ -81,7 +81,7 @@ def set_name_x(name_x, x, constant=False):
         name_x = ['var_'+str(i+1) for i in range(x.shape[1])]
     else:
         name_x = name_x[:]
-    if not constant:
+    if not regi:
         name_x.insert(0, 'CONSTANT')
     return name_x
     
@@ -153,7 +153,7 @@ def set_name_yend_sp(name_y):
     """
     return 'W_' + name_y
 
-def set_name_q_sp(name_x, w_lags, name_q, lag_q, force_all=False):
+def set_name_q_sp(name_x, w_lags, name_q, lag_q):
     """Set the spatial instrument names in regression; return generic name if user
     provides no explicit name."
 
@@ -172,12 +172,10 @@ def set_name_q_sp(name_x, w_lags, name_q, lag_q, force_all=False):
     name_q_sp   : list of strings
                   
     """
-    if force_all:
-        names = name_x
-    else:
-        names = name_x[1:] # drop the constant
     if lag_q:
-        names = names + name_q   
+        names = name_x[1:] + name_q   # drop the constant
+    else:
+        names = name_x[1:]   # drop the constant
     sp_inst_names = []
     for j in names:
         sp_inst_names.append('W_'+j)

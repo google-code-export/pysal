@@ -5,7 +5,6 @@ import tempfile
 import os
 import warnings
 
-
 class test_ArcGISTextIO(unittest.TestCase):
     def setUp(self):
         self.test_file = test_file = pysal.examples.get_path('arcgis_txt.txt')
@@ -40,20 +39,19 @@ class test_ArcGISTextIO(unittest.TestCase):
             if len(warn) > 0:
                 assert issubclass(warn[0].category, RuntimeWarning)
                 assert "DBF relating to ArcGIS TEXT was not found, proceeding with unordered string ids." in str(warn[0].message)
-        f = tempfile.NamedTemporaryFile(
-            suffix='.txt', dir=pysal.examples.get_path(''))
+        f = tempfile.NamedTemporaryFile(suffix='.txt',dir=pysal.examples.get_path(''))
         fname = f.name
         f.close()
-        o = pysal.open(fname, 'w', 'arcgis_text')
+        o = pysal.open(fname,'w','arcgis_text')
         o.write(w)
         o.close()
         with warnings.catch_warnings(record=True) as warn:
             warnings.simplefilter("always")
-            wnew = pysal.open(fname, 'r', 'arcgis_text').read()
+            wnew =  pysal.open(fname,'r','arcgis_text').read()
             if len(warn) > 0:
                 assert issubclass(warn[0].category, RuntimeWarning)
                 assert "DBF relating to ArcGIS TEXT was not found, proceeding with unordered string ids." in str(warn[0].message)
-        self.assertEqual(wnew.pct_nonzero, w.pct_nonzero)
+        self.assertEqual( wnew.pct_nonzero, w.pct_nonzero)
         os.remove(fname)
 
 if __name__ == '__main__':

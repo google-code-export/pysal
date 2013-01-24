@@ -19,7 +19,7 @@ class TestBaseGMError(unittest.TestCase):
         self.w.transform = 'r'
 
     def test_model(self):
-        reg = SP.BaseGM_Error(self.y, self.X, self.w.sparse)
+        reg = SP.BaseGM_Error(self.y, self.X, self.w)
         betas = np.array([[ 47.94371455], [  0.70598088], [ -0.55571746], [  0.37230161]])
         np.testing.assert_array_almost_equal(reg.betas,betas,6)
         u = np.array([ 27.4739775])
@@ -115,7 +115,7 @@ class TestBaseGMEndogError(unittest.TestCase):
         self.w.transform = 'r'
 
     def test_model(self):
-        reg = SP.BaseGM_Endog_Error(self.y, self.X, self.yd, self.q, self.w.sparse)
+        reg = SP.BaseGM_Endog_Error(self.y, self.X, self.yd, self.q, self.w)
         betas = np.array([[ 55.36095292], [  0.46411479], [ -0.66883535], [  0.38989939]])
         np.testing.assert_array_almost_equal(reg.betas,betas,6)
         u = np.array([ 26.55951566])
@@ -126,7 +126,7 @@ class TestBaseGMEndogError(unittest.TestCase):
         np.testing.assert_array_almost_equal(reg.predy[0],predy,6)
         n = 49
         self.assertAlmostEqual(reg.n,n)
-        k = 3
+        k = 2
         self.assertAlmostEqual(reg.k,k)
         y = np.array([ 80.467003])
         np.testing.assert_array_almost_equal(reg.y[0],y,6)
@@ -142,9 +142,7 @@ class TestBaseGMEndogError(unittest.TestCase):
         sy = 18.466069465206047
         self.assertAlmostEqual(reg.std_y,sy)
         #vm
-        vm = np.array([[ 529.15644447,  -15.78333817,   -8.38016887],
-       [ -15.78333817,    0.54023465,    0.2311196 ],
-       [  -8.38016887,    0.2311196 ,    0.14497647]])
+        vm = np.array([[  5.29156458e+02,  -1.57833384e+01,  -8.38016915e+00], [ -1.57833384e+01,   5.40234656e-01,   2.31119606e-01], [ -8.38016915e+00,   2.31119606e-01, 1.44976477e-01]])
         np.testing.assert_array_almost_equal(reg.vm,vm,5)
         sig2 = 192.50040382591442
         self.assertAlmostEqual(reg.sig2,sig2,5)
@@ -179,7 +177,7 @@ class TestGMEndogError(unittest.TestCase):
         np.testing.assert_array_almost_equal(reg.predy[0],predy,6)
         n = 49
         self.assertAlmostEqual(reg.n,n)
-        k = 3
+        k = 2
         self.assertAlmostEqual(reg.k,k)
         y = np.array([ 80.467003])
         np.testing.assert_array_almost_equal(reg.y[0],y,6)
@@ -193,9 +191,7 @@ class TestGMEndogError(unittest.TestCase):
         self.assertAlmostEqual(reg.mean_y,my)
         sy = 18.466069465206047
         self.assertAlmostEqual(reg.std_y,sy)
-        vm = np.array([[ 529.15644447,  -15.78333817,   -8.38016887],
-       [ -15.78333817,    0.54023465,    0.2311196 ],
-       [  -8.38016887,    0.2311196 ,    0.14497647]])
+        vm = np.array([[  5.29156458e+02,  -1.57833384e+01,  -8.38016915e+00], [ -1.57833384e+01,   5.40234656e-01,   2.31119606e-01], [ -8.38016915e+00,   2.31119606e-01, 1.44976477e-01]])
         np.testing.assert_array_almost_equal(reg.vm,vm,5)
         pr2 = 0.346472557570858
         self.assertAlmostEqual(reg.pr2,pr2)
@@ -223,7 +219,7 @@ class TestBaseGMCombo(unittest.TestCase):
         yd2, q2 = pysal.spreg.utils.set_endog(self.y, self.X, self.w, None, None, 1, True)
         self.X = np.hstack((np.ones(self.y.shape),self.X))
         self.X = sparse.csr_matrix(self.X)
-        reg = SP.BaseGM_Combo(self.y, self.X, yend=yd2, q=q2, w=self.w.sparse)
+        reg = SP.BaseGM_Combo(self.y, self.X, yend=yd2, q=q2, w=self.w)
         betas = np.array([[ 57.61123461],[  0.73441314], [ -0.59459416], [ -0.21762921], [  0.54732051]])
         np.testing.assert_array_almost_equal(reg.betas,betas,5)
         u = np.array([ 25.57932637])
@@ -234,7 +230,7 @@ class TestBaseGMCombo(unittest.TestCase):
         np.testing.assert_array_almost_equal(reg.predy[0],predy,6)
         n = 49
         self.assertAlmostEqual(reg.n,n)
-        k = 4
+        k = 3
         self.assertAlmostEqual(reg.k,k)
         y = np.array([ 80.467003])
         np.testing.assert_array_almost_equal(reg.y[0],y,6)
@@ -282,7 +278,7 @@ class TestGMCombo(unittest.TestCase):
         np.testing.assert_array_almost_equal(reg.predy[0],predy,6)
         n = 49
         self.assertAlmostEqual(reg.n,n)
-        k = 4
+        k = 3
         self.assertAlmostEqual(reg.k,k)
         y = np.array([ 80.467003])
         np.testing.assert_array_almost_equal(reg.y[0],y,6)
@@ -310,8 +306,4 @@ class TestGMCombo(unittest.TestCase):
         np.testing.assert_array_almost_equal(reg.z_stat,z_stat,6)
 
 if __name__ == '__main__':
-    start_suppress = np.get_printoptions()['suppress']
-    np.set_printoptions(suppress=True) 
     unittest.main()
-    np.set_printoptions(suppress=start_suppress)
-

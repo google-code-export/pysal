@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pysal
-from pysal.spreg.twosls import BaseTSLS, TSLS
+from pysal.spreg.twosls import TSLS, BaseTSLS
 
 class TestBaseTSLS(unittest.TestCase):
     def setUp(self):

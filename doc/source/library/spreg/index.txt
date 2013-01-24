@@ -2,16 +2,8 @@
 =================================================
 
 .. toctree::
-   
-   ols
-   probit
-   twosls
-   twosls_sp
-   diagnostics
-   diagnostics_sp
-   diagnostics_tsls
-   error_sp
-   error_sp_het
-   error_sp_hom
+    :maxdepth: 1
+    :glob:
 
+    *
 

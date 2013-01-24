@@ -32,8 +32,9 @@ class BaseGM_Error(RegressionPropsY):
     x            : array
                    Two dimensional array with n rows and one column for each
                    independent (exogenous) variable, excluding the constant
-    w            : Sparse matrix
-                   Spatial weights sparse matrix   
+    w            : pysal W object
+                   Spatial weights object (note: if provided then spatial
+                   diagnostics are computed)   
 
     Attributes
     ----------
@@ -88,7 +89,7 @@ class BaseGM_Error(RegressionPropsY):
     >>> x = np.hstack((np.ones(y.shape),x))
     >>> w = pysal.open(pysal.examples.get_path("columbus.gal"), 'r').read() 
     >>> w.transform='r'
-    >>> model = BaseGM_Error(y, x, w.sparse)
+    >>> model = BaseGM_Error(y, x, w)
     >>> np.around(model.betas, decimals=6)
     array([[ 47.694635],
            [  0.710453],
@@ -117,7 +118,7 @@ class BaseGM_Error(RegressionPropsY):
         self.u = y - self.predy
         self.betas = np.vstack((ols2.betas, np.array([[lambda1]])))
         self.sig2 = ols2.sig2n
-        self.e_filtered = self.u - lambda1*w*self.u
+        self.e_filtered = self.u - lambda1*lag_spatial(w,self.u)
 
         self.vm = self.sig2 * ols2.xtxi
         se_betas = np.sqrt(self.vm.diagonal())
@@ -289,9 +290,9 @@ class GM_Error(BaseGM_Error):
     >>> np.around(model.std_err, decimals=6)
     array([ 12.412038,   0.504443,   0.178496])
     >>> np.around(model.z_stat, decimals=6)
-    array([[  3.84261100e+00,   1.22000000e-04],
-           [  1.40839200e+00,   1.59015000e-01],
-           [ -3.08424700e+00,   2.04100000e-03]])
+    array([[ 3.842611,  0.000122],
+           [ 1.408392,  0.159015],
+           [-3.084247,  0.002041]])
     >>> np.around(model.sig2, decimals=6)
     198.55957900000001
 
@@ -304,7 +305,7 @@ class GM_Error(BaseGM_Error):
         USER.check_y(y, n)
         USER.check_weights(w, y)
         x_constant = USER.check_constant(x)
-        BaseGM_Error.__init__(self, y=y, x=x_constant, w=w.sparse)
+        BaseGM_Error.__init__(self, y=y, x=x_constant, w=w) 
         self.title = "SPATIALLY WEIGHTED LEAST SQUARES"        
         self.name_ds = USER.set_name_ds(name_ds)
         self.name_y = USER.set_name_y(name_y)
@@ -334,8 +335,9 @@ class BaseGM_Endog_Error(RegressionPropsY):
                    Two dimensional array with n rows and one column for each
                    external exogenous variable to use as instruments (note: 
                    this should not contain any variables from x)
-    w            : Sparse matrix
-                   Spatial weights sparse matrix 
+    w            : pysal W object
+                   Spatial weights object (note: if provided then spatial
+                   diagnostics are computed)   
 
     Attributes
     ----------
@@ -397,7 +399,7 @@ class BaseGM_Endog_Error(RegressionPropsY):
     >>> q = np.array([dbf.by_col('DISCBD')]).T
     >>> w = pysal.open(pysal.examples.get_path("columbus.gal"), 'r').read() 
     >>> w.transform='r'
-    >>> model = BaseGM_Endog_Error(y, x, yend, q, w.sparse)
+    >>> model = BaseGM_Endog_Error(y, x, yend, q, w)
     >>> np.around(model.betas, decimals=5)
     array([[ 82.57297],
            [  0.58096],
@@ -409,7 +411,7 @@ class BaseGM_Endog_Error(RegressionPropsY):
 
         #1a. TSLS --> \tilde{betas}
         tsls = TSLS.BaseTSLS(y=y, x=x, yend=yend, q=q)
-        self.n, self.k = tsls.z.shape
+        self.n, self.k = tsls.x.shape
         self.x = tsls.x
         self.y = tsls.y
         self.yend, self.z = tsls.yend, tsls.z
@@ -429,7 +431,7 @@ class BaseGM_Endog_Error(RegressionPropsY):
         self.predy = spdot(tsls.z, tsls2.betas)
         self.u = y - self.predy
         self.sig2 = float(np.dot(tsls2.u.T,tsls2.u)) / self.n
-        self.e_filtered = self.u - lambda1*w*self.u
+        self.e_filtered = self.u - lambda1*lag_spatial(w,self.u)
         self.vm = self.sig2 * tsls2.varb 
         self._cache = {}
 
@@ -648,7 +650,7 @@ class GM_Endog_Error(BaseGM_Endog_Error):
         USER.check_y(y, n)
         USER.check_weights(w, y)
         x_constant = USER.check_constant(x)
-        BaseGM_Endog_Error.__init__(self, y=y, x=x_constant, w=w.sparse, yend=yend, q=q)
+        BaseGM_Endog_Error.__init__(self, y=y, x=x_constant, w=w, yend=yend, q=q)
         self.title = "SPATIALLY WEIGHTED TWO STAGE LEAST SQUARES"        
         self.name_ds = USER.set_name_ds(name_ds)
         self.name_y = USER.set_name_y(name_y)
@@ -682,8 +684,9 @@ class BaseGM_Combo(BaseGM_Endog_Error):
                    Two dimensional array with n rows and one column for each
                    external exogenous variable to use as instruments (note: 
                    this should not contain any variables from x)
-    w            : Sparse matrix
-                   Spatial weights sparse matrix  
+    w            : pysal W object
+                   Spatial weights object (note: if provided then spatial
+                   diagnostics are computed)   
     w_lags       : integer
                    Orders of W to include as instruments for the spatially
                    lagged dependent variable. For example, w_lags=1, then
@@ -758,7 +761,7 @@ class BaseGM_Combo(BaseGM_Endog_Error):
 
     Example only with spatial lag
 
-    >>> reg = BaseGM_Combo(y, X, yend=yd2, q=q2, w=w.sparse)
+    >>> reg = BaseGM_Combo(y, X, yend=yd2, q=q2, w=w)
 
     Print the betas
 
@@ -786,7 +789,7 @@ class BaseGM_Combo(BaseGM_Endog_Error):
     >>> q = np.array(q).T
     >>> yd2, q2 = pysal.spreg.utils.set_endog(y, X, w, yd, q, w_lags, True)
     >>> X = np.hstack((np.ones(y.shape),X))
-    >>> reg = BaseGM_Combo(y, X, yd2, q2, w.sparse)
+    >>> reg = BaseGM_Combo(y, X, yd2, q2, w)
     >>> betas = np.array([['CONSTANT'],['INC'],['HOVAL'],['W_CRIME']])
     >>> print np.hstack((betas, np.around(np.hstack((reg.betas[:-1], np.sqrt(reg.vm.diagonal()).reshape(4,1))),4)))
     [['CONSTANT' '50.0944' '14.3593']
@@ -1053,7 +1056,7 @@ class GM_Combo(BaseGM_Combo):
         USER.check_weights(w, y)
         yend2, q2 = set_endog(y, x, w, yend, q, w_lags, lag_q)
         x_constant = USER.check_constant(x)
-        BaseGM_Combo.__init__(self, y=y, x=x_constant, w=w.sparse, yend=yend2, q=q2,\
+        BaseGM_Combo.__init__(self, y=y, x=x_constant, w=w, yend=yend2, q=q2,\
                                 w_lags=w_lags, lag_q=lag_q)
         self.predy_e, self.e_pred = sp_att(w,self.y,\
                    self.predy,yend2[:,-1].reshape(self.n,1),self.betas[-2])        
@@ -1069,26 +1072,23 @@ class GM_Combo(BaseGM_Combo):
         self.name_q.extend(USER.set_name_q_sp(self.name_x, w_lags, self.name_q, lag_q))
         self.name_h = USER.set_name_h(self.name_x, self.name_q)
         self.name_w = USER.set_name_w(name_w, w)
-        SUMMARY.GM_Combo(reg=self, w=w, vm=vm)   
+        SUMMARY.GM_Combo(reg=self, w=w, vm=vm)
+
+   
 
 def _momentsGM_Error(w, u):
-    try:
-        wsparse = w.sparse
-    except:
-        wsparse = w
-    n = wsparse.shape[0]
     u2 = np.dot(u.T, u)
-    wu = wsparse * u
+    wu = w.sparse * u
     uwu = np.dot(u.T, wu)
     wu2 = np.dot(wu.T, wu)
-    wwu = wsparse * wu
+    wwu = w.sparse * wu
     uwwu = np.dot(u.T, wwu)
     wwu2 = np.dot(wwu.T, wwu)
     wuwwu = np.dot(wu.T, wwu)
-    wtw = wsparse.T * wsparse
+    wtw = w.sparse.T * w.sparse
     trWtW = np.sum(wtw.diagonal())
-    g = np.array([[u2[0][0], wu2[0][0], uwu[0][0]]]).T / n
-    G = np.array([[2 * uwu[0][0], -wu2[0][0], n], [2 * wuwwu[0][0], -wwu2[0][0], trWtW], [uwwu[0][0] + wu2[0][0], -wuwwu[0][0], 0.]]) / n
+    g = np.array([[u2[0][0], wu2[0][0], uwu[0][0]]]).T / w.n
+    G = np.array([[2 * uwu[0][0], -wu2[0][0], w.n], [2 * wuwwu[0][0], -wwu2[0][0], trWtW], [uwwu[0][0] + wu2[0][0], -wuwwu[0][0], 0.]]) / w.n
     return [G, g]
 
 def _test():
@@ -1101,14 +1101,3 @@ def _test():
 if __name__ == '__main__':
 
     _test()
-    import pysal
-    import numpy as np
-    dbf = pysal.open(pysal.examples.get_path('columbus.dbf'),'r')
-    y = np.array([dbf.by_col('HOVAL')]).T
-    names_to_extract = ['INC', 'CRIME']
-    x = np.array([dbf.by_col(name) for name in names_to_extract]).T
-    w = pysal.open(pysal.examples.get_path("columbus.gal"), 'r').read() 
-    w.transform='r'
-    model = GM_Error(y, x, w, name_y='hoval', name_x=['income', 'crime'], name_ds='columbus')
-    print model.summary
-    

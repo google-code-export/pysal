@@ -345,12 +345,8 @@ def get_spFilter(w,lamb,sf):
      [ -36.9051915]
      [-111.1298   ]]
 
-    '''
-    try:
-        result = sf - lamb * (w.sparse * sf)
-    except:
-        result = sf - lamb * (w * sf)
-    return result
+    '''        
+    return sf - lamb * (w.sparse * sf)
 
 def get_lags(w, x, w_lags):
     '''
@@ -437,10 +433,7 @@ def inverse_prod(w, data, scalar, post_multiply=False, inv_method="power_exp", t
         inv_prod = power_expansion(w, data, scalar, post_multiply=post_multiply,\
                 threshold=threshold, max_iterations=max_iterations)
     elif inv_method=="true_inv":
-        try:
-            matrix = la.inv(np.eye(w.n) - (scalar * w.full()[0]))
-        except:
-            matrix = la.inv(np.eye(w.shape[0]) - (scalar * w))
+        matrix = la.inv(np.eye(w.n) - (scalar * w.full()[0]))
         if post_multiply:
             inv_prod = spdot(data.T, matrix)
         else:
@@ -463,12 +456,11 @@ def power_expansion(w, data, scalar, post_multiply=False, threshold=0.0000000001
     Tests for this function are in inverse_prod()
 
     """
-    try:
-        ws = w.sparse
-    except:
-        ws = w
     if post_multiply:
+        lag = rev_lag_spatial
         data = data.T
+    else:
+        lag = lag_spatial
     running_total = copy.copy(data)
     increment = copy.copy(data)
     count = 1
@@ -476,10 +468,7 @@ def power_expansion(w, data, scalar, post_multiply=False, threshold=0.0000000001
     if max_iterations == None:
         max_iterations = 10000000
     while test > threshold and count <= max_iterations:
-        if post_multiply:    
-            increment = increment*ws*scalar
-        else:
-            increment = ws*increment*scalar
+        increment = lag(w, scalar*increment)
         running_total += increment
         test_old = test
         test = la.norm(increment)
@@ -487,6 +476,33 @@ def power_expansion(w, data, scalar, post_multiply=False, threshold=0.0000000001
             raise Exception, "power expansion will not converge, check model specification and that weight are less than 1"
         count += 1
     return running_total
+
+def rev_lag_spatial(w, y):
+    """
+    Helper function for power_expansion.  This reverses the usual lag operator
+    (pysal.lag_spatial) to post-multiply a vector by a sparse W.
+
+    Parameters
+    ----------
+
+    w : W
+        weights object
+    y : array
+        variable to take the lag of (note: assumed that the order of y matches
+        w.id_order)
+
+    Returns
+    -------
+
+    yw : array
+         array of numeric values
+
+    Examples
+    --------
+    Tests for this function are in inverse_prod()
+
+    """
+    return y * w.sparse
 
 def set_endog(y, x, w, yend, q, w_lags, lag_q):
     # Create spatial lag of y
@@ -501,38 +517,6 @@ def set_endog(y, x, w, yend, q, w_lags, lag_q):
         yend = sphstack(yend, yl)
     elif yend == None: # spatial instruments only
         q = get_lags(w, x, w_lags)
-        yend = yl
-    else:
-        raise Exception, "invalid value passed to yend"
-    return yend, q
-
-    lag = lag_spatial(w, x)
-    spat_lags = lag
-    for i in range(w_lags-1):
-        lag = lag_spatial(w, lag)
-        spat_lags = sphstack(spat_lags, lag)
-    return spat_lags
-
-
-def set_endog_sparse(y, x, w, yend, q, w_lags, lag_q):
-    """
-    Same as set_endog, but with a sparse object passed as weights instead of W object.
-    """
-    yl = w * y
-    if issubclass(type(yend), np.ndarray):  # spatial and non-spatial instruments
-        if lag_q:
-            lag_vars = sphstack(x, q)
-        else:
-            lag_vars = x
-        spatial_inst = w * lag_vars
-        for i in range(w_lags-1):
-            spatial_inst = sphstack(spatial_inst, w * spatial_inst)
-        q = sphstack(q, spatial_inst)
-        yend = sphstack(yend, yl)
-    elif yend == None: # spatial instruments only
-        q = w * x
-        for i in range(w_lags-1):
-            q = sphstack(q, w * q)        
         yend = yl
     else:
         raise Exception, "invalid value passed to yend"
@@ -689,74 +673,8 @@ def spbroadcast(a,b, array_out=False):
         raise Exception, "Invalid format for 'spbroadcast' argument: %s and %s"%(type(a).__name__, type(b).__name__)
     return ab
 
-def spmin(a):
-    """
-    Minimum value in a matrix or vector to deal with sparse and dense objects
-
-    Parameters
-    ----------
-
-    a           : array or sparse matrix
-                  Object with one or more columns.
-
-    Returns
-    -------
-
-    min a       : int or float
-                  minimum value in a
-    """  
 
 
-    if type(a).__name__ == 'ndarray':
-        return a.min()
-    elif type(a).__name__ == 'csr_matrix' or type(a).__name__ == 'csc_matrix':
-        try:
-            return min(a.data)
-        except:
-            if np.sum(a.data) == 0:
-                return 0
-            else:
-                raise Exception, "Error: could not evaluate the minimum value."
-    else:
-        raise Exception, "Invalid format for 'spmultiply' argument: %s and %s"%(type(a).__name__, type(b).__name__)
-
-def spmax(a):
-    """
-    Maximum value in a matrix or vector to deal with sparse and dense objects
-
-    Parameters
-    ----------
-
-    a           : array or sparse matrix
-                  Object with one or more columns.
-
-    Returns
-    -------
-
-    max a       : int or float
-                  maximum value in a
-    """  
-    if type(a).__name__ == 'ndarray':
-        return a.max()
-    elif type(a).__name__ == 'csr_matrix' or type(a).__name__ == 'csc_matrix':
-        try:
-            return max(a.data)
-        except:
-            if np.sum(a.data) == 0:
-                return 0
-            else:
-                raise Exception, "Error: could not evaluate the maximum value."    
-    else:
-        raise Exception, "Invalid format for 'spmultiply' argument: %s and %s"%(type(a).__name__, type(b).__name__)
-
-def set_warn(reg,warn):
-    if warn:
-        try:
-            reg.warning += warn
-        except:
-            reg.warning = warn
-    else:
-        reg.warning = None
 
 def _test():
     import doctest

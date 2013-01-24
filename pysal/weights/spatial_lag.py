@@ -4,11 +4,10 @@ spatial lag operations
 __authors__ = "Serge Rey <srey@asu.edu>, David C. Folch <david.folch@asu.edu>"
 __all__ = ['lag_spatial']
 
-
 def lag_spatial(w, y):
     """
     Spatial lag operator. If w is row standardized, returns the average of
-    each observation's neighbors; if not, returns the weighted sum of each
+    each observation's neighbors; if not, returns the weighted sum of each 
     observation's neighbors.
 
     Parameters
@@ -31,7 +30,7 @@ def lag_spatial(w, y):
 
     >>> import pysal
     >>> import numpy as np
-
+    
     Setup a 9x9 binary spatial weights matrix and vector of data; compute the
     spatial lag of the vector.
 
@@ -40,7 +39,7 @@ def lag_spatial(w, y):
     >>> yl = pysal.lag_spatial(w, y)
     >>> yl
     array([  4.,   6.,   6.,  10.,  16.,  14.,  10.,  18.,  12.])
-
+    
     Row standardize the weights matrix and recompute the spatial lag
 
     >>> w.transform = 'r'
@@ -48,7 +47,7 @@ def lag_spatial(w, y):
     >>> yl
     array([ 2.        ,  2.        ,  3.        ,  3.33333333,  4.        ,
             4.66666667,  5.        ,  6.        ,  6.        ])
-
+    
     Explicitly define data vector as 9x1 and recompute the spatial lag
 
     >>> y.shape = (9, 1)
@@ -82,4 +81,13 @@ def lag_spatial(w, y):
            [ 6.        ,  2.        ]])
 
     """
-    return w.sparse * y
+    return w.sparse*y
+
+def _test():
+    """Doc test"""
+    import doctest
+    doctest.testmod(verbose=True)
+
+
+if __name__ == '__main__':
+    _test()

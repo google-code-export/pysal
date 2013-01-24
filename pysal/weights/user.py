@@ -4,8 +4,8 @@ contiguity and distance criteria
 
 """
 
-__author__ = "Sergio J. Rey <srey@asu.edu> "
-__all__ = ['queen_from_shapefile', 'rook_from_shapefile', 'knnW_from_array', 'knnW_from_shapefile', 'threshold_binaryW_from_array', 'threshold_binaryW_from_shapefile', 'threshold_continuousW_from_array', 'threshold_continuousW_from_shapefile', 'kernelW', 'kernelW_from_shapefile', 'adaptive_kernelW', 'adaptive_kernelW_from_shapefile', 'min_threshold_dist_from_shapefile', 'build_lattice_shapefile']
+__author__  = "Sergio J. Rey <srey@asu.edu> "
+__all__ = ['queen_from_shapefile', 'rook_from_shapefile', 'knnW_from_array','knnW_from_shapefile', 'threshold_binaryW_from_array', 'threshold_binaryW_from_shapefile', 'threshold_continuousW_from_array', 'threshold_continuousW_from_shapefile', 'kernelW', 'kernelW_from_shapefile', 'adaptive_kernelW', 'adaptive_kernelW_from_shapefile', 'min_threshold_dist_from_shapefile','build_lattice_shapefile']
 
 import pysal
 from Contiguity import buildContiguity
@@ -67,9 +67,8 @@ def queen_from_shapefile(shapefile, idVariable=None, sparse=False):
     shp.close()
 
     if sparse:
-        w = pysal.weights.WSP(w.sparse, id_order=ids)
+        w = pysal.weights.WSP(w.sparse)
     return w
-
 
 def rook_from_shapefile(shapefile, idVariable=None, sparse=False):
     """
@@ -118,7 +117,7 @@ def rook_from_shapefile(shapefile, idVariable=None, sparse=False):
     w = buildContiguity(shp, criterion='rook', ids=ids)
     shp.close()
     if sparse:
-        w = pysal.weights.WSP(w.sparse, id_order=ids)
+        w = pysal.weights.WSP(w.sparse)
     return w
 
 
@@ -148,10 +147,9 @@ def spw_from_gal(galfile):
     462
     """
 
-    return pysal.open(galfile, 'r').read(sparse=True)
+    return pysal.open(galfile,'r').read(sparse=True)
 
 # Distance based weights
-
 
 def knnW_from_array(array, k=2, p=2, ids=None, radius=None):
     """
@@ -224,12 +222,11 @@ def knnW_from_array(array, k=2, p=2, ids=None, radius=None):
     :class:`pysal.weights.W`
 
     """
-    if radius is not None:
+    if radius != None:
         array = pysal.cg.KDTree(array, distance_metric='Arc', radius=radius)
-    return knnW(array, k=k, p=p, ids=ids)
+    return knnW(array,k=k,p=p,ids=ids)
 
-
-def knnW_from_shapefile(shapefile, k=2, p=2, idVariable=None, radius=None):
+def knnW_from_shapefile(shapefile,k=2,p=2,idVariable=None, radius=None):
     """
     Nearest neighbor weights from a shapefile
 
@@ -281,7 +278,7 @@ def knnW_from_shapefile(shapefile, k=2, p=2, idVariable=None, radius=None):
     >>> w1=knnW_from_shapefile(pysal.examples.get_path("juvenile.shp"),k=1)
     >>> w1.pct_nonzero
     0.0059523809523809521
-    >>>
+    >>> 
 
     Notes
     -----
@@ -301,15 +298,14 @@ def knnW_from_shapefile(shapefile, k=2, p=2, idVariable=None, radius=None):
     """
 
     data = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         data = pysal.cg.KDTree(data, distance_metric='Arc', radius=radius)
     if idVariable:
         ids = get_ids(shapefile, idVariable)
-        return knnW(data, k=k, p=p, ids=ids)
-    return knnW(data, k=k, p=p)
+        return knnW(data,k=k,p=p,ids=ids)
+    return knnW(data,k=k,p=p)
 
-
-def threshold_binaryW_from_array(array, threshold, p=2, radius=None):
+def threshold_binaryW_from_array(array,threshold,p=2, radius=None):
     """
     Binary weights based on a distance threshold
 
@@ -342,14 +338,13 @@ def threshold_binaryW_from_array(array, threshold, p=2, radius=None):
     {0: [1, 1], 1: [1, 1], 2: [], 3: [1, 1], 4: [1], 5: [1]}
     >>> w.neighbors
     {0: [1, 3], 1: [0, 3], 2: [], 3: [0, 1], 4: [5], 5: [4]}
-    >>>
+    >>> 
     """
-    if radius is not None:
+    if radius != None:
         array = pysal.cg.KDTree(array, distance_metric='Arc', radius=radius)
-    return DistanceBand(array, threshold=threshold, p=p)
+    return DistanceBand(array,threshold=threshold,p=p)
 
-
-def threshold_binaryW_from_shapefile(shapefile, threshold, p=2, idVariable=None, radius=None):
+def threshold_binaryW_from_shapefile(shapefile,threshold,p=2,idVariable=None, radius=None):
     """
     Threshold distance based binary weights from a shapefile
 
@@ -381,28 +376,17 @@ def threshold_binaryW_from_shapefile(shapefile, threshold, p=2, idVariable=None,
     >>> w = threshold_binaryW_from_shapefile(pysal.examples.get_path("columbus.shp"),0.62,idVariable="POLYID")
     >>> w.weights[1]
     [1, 1]
-
-
-    Notes
-    -----
-    Supports polygon or point shapefiles. For polygon shapefiles, distance is
-    based on polygon centroids. Distances are defined using coordinates in
-    shapefile which are assumed to be projected and not geographical
-    coordinates.
-
-
     """
     data = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         data = pysal.cg.KDTree(data, distance_metric='Arc', radius=radius)
     if idVariable:
-        ids = get_ids(shapefile, idVariable)
-        return DistanceBand(data, threshold=threshold, p=p, ids=ids)
-    return threshold_binaryW_from_array(data, threshold, p=p)
+        ids = get_ids(shapefile,idVariable)
+        return DistanceBand(data,threshold=threshold,p=p,ids=ids)
+    return threshold_binaryW_from_array(data,threshold,p=p)
 
-
-def threshold_continuousW_from_array(array, threshold, p=2,
-                                     alpha=-1, radius=None):
+def threshold_continuousW_from_array(array,threshold,p=2,
+                                     alpha=-1,radius=None):
 
     """
     Continuous weights based on a distance threshold
@@ -420,10 +404,10 @@ def threshold_continuousW_from_array(array, threshold, p=2,
                  1<=p<=infinity
                  2: Euclidean distance
                  1: Manhattan distance
-    alpha      : float
+    alpha      : float 
                  distance decay parameter for weight (default -1.0)
                  if alpha is positive the weights will not decline with
-                 distance.
+                 distance. 
     radius     : If supplied arc_distances will be calculated
                  based on the given radius. p will be ignored.
 
@@ -452,15 +436,13 @@ def threshold_continuousW_from_array(array, threshold, p=2,
 
 
     """
-    if radius is not None:
+    if radius != None:
         array = pysal.cg.KDTree(array, distance_metric='Arc', radius=radius)
-    w = DistanceBand(
-        array, threshold=threshold, p=p, alpha=alpha, binary=False)
+    w=DistanceBand(array,threshold=threshold,p=p,alpha=alpha,binary=False)
     return w
 
-
-def threshold_continuousW_from_shapefile(shapefile, threshold, p=2,
-                                         alpha=-1, idVariable=None, radius=None):
+def threshold_continuousW_from_shapefile(shapefile,threshold,p=2,
+                                         alpha=-1,idVariable=None, radius=None):
     """
     Threshold distance based continuous weights from a shapefile
 
@@ -476,10 +458,10 @@ def threshold_continuousW_from_shapefile(shapefile, threshold, p=2,
                  1<=p<=infinity
                  2: Euclidean distance
                  1: Manhattan distance
-    alpha      : float
+    alpha      : float 
                  distance decay parameter for weight (default -1.0)
                  if alpha is positive the weights will not decline with
-                 distance.
+                 distance. 
     idVariable : string
                  name of a column in the shapefile's DBF to use for ids
     radius     : If supplied arc_distances will be calculated
@@ -496,31 +478,21 @@ def threshold_continuousW_from_shapefile(shapefile, threshold, p=2,
     >>> w = threshold_continuousW_from_shapefile(pysal.examples.get_path("columbus.shp"),0.62,idVariable="POLYID")
     >>> w.weights[1]
     [1.6702346893743334, 1.7250729841938093]
-
-    Notes
-    -----
-    Supports polygon or point shapefiles. For polygon shapefiles, distance is
-    based on polygon centroids. Distances are defined using coordinates in
-    shapefile which are assumed to be projected and not geographical
-    coordinates.
-
-
     """
     data = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         data = pysal.cg.KDTree(data, distance_metric='Arc', radius=radius)
     if idVariable:
-        ids = get_ids(shapefile, idVariable)
-        return DistanceBand(data, threshold=threshold, p=p, alpha=alpha, binary=False, ids=ids)
-    return threshold_continuousW_from_array(data, threshold, p=p, alpha=alpha)
+        ids = get_ids(shapefile,idVariable)
+        return DistanceBand(data,threshold=threshold,p=p,alpha=alpha,binary=False,ids=ids)
+    return threshold_continuousW_from_array(data,threshold,p=p,alpha=alpha)
 
 # Kernel Weights
 
-
-def kernelW(points, k=2, function='triangular', fixed=True, radius=None):
+def kernelW(points,k=2,function='triangular',fixed=True, radius=None):
     """
     Kernel based weights
-
+ 
     Parameters
     ----------
 
@@ -532,7 +504,7 @@ def kernelW(points, k=2, function='triangular', fixed=True, radius=None):
                   bandwidth. Bandwidth taken as :math:`h_i=max(dknn) \\forall i`
                   where :math:`dknn` is a vector of k-nearest neighbor
                   distances (the distance to the kth nearest neighbor for each
-                  observation).
+                  observation).  
     function    : string {'triangular','uniform','quadratic','epanechnikov',
                   'quartic','bisquare','gaussian'}
 
@@ -541,19 +513,19 @@ def kernelW(points, k=2, function='triangular', fixed=True, radius=None):
 
                       z_{i,j} = d_{i,j}/h_i
 
-                  triangular
+                  triangular 
 
                   .. math::
 
                       K(z) = (1 - |z|) \ if |z| \le 1
 
-                  uniform
+                  uniform 
 
                   .. math::
 
                       K(z) = |z| \ if |z| \le 1
 
-                  quadratic
+                  quadratic 
 
                   .. math::
 
@@ -570,7 +542,7 @@ def kernelW(points, k=2, function='triangular', fixed=True, radius=None):
                   .. math::
 
                       K(z) = (15/16)(1-z^2)^2 \ if |z| \le 1
-
+                 
                   bisquare
 
                   .. math::
@@ -624,15 +596,14 @@ def kernelW(points, k=2, function='triangular', fixed=True, radius=None):
            [ 22.36068201],
            [ 22.36068201]])
     """
-    if radius is not None:
+    if radius != None:
         points = pysal.cg.KDTree(points, distance_metric='Arc', radius=radius)
-    return Kernel(points, function=function, k=k, fixed=fixed)
+    return Kernel(points,function=function,k=k,fixed=fixed)
 
-
-def kernelW_from_shapefile(shapefile, k=2, function='triangular', idVariable=None, fixed=True, radius=None):
+def kernelW_from_shapefile(shapefile,k=2,function='triangular',idVariable=None, fixed=True, radius=None):
     """
     Kernel based weights
-
+ 
     Parameters
     ----------
 
@@ -643,7 +614,7 @@ def kernelW_from_shapefile(shapefile, k=2, function='triangular', idVariable=Non
                   bandwidth. Bandwidth taken as :math:`h_i=max(dknn) \\forall i`
                   where :math:`dknn` is a vector of k-nearest neighbor
                   distances (the distance to the kth nearest neighbor for each
-                  observation).
+                  observation).  
     function    : string {'triangular','uniform','quadratic','epanechnikov',
                   'quartic','bisquare','gaussian'}
 
@@ -652,19 +623,19 @@ def kernelW_from_shapefile(shapefile, k=2, function='triangular', idVariable=Non
 
                       z_{i,j} = d_{i,j}/h_i
 
-                  triangular
+                  triangular 
 
                   .. math::
 
                       K(z) = (1 - |z|) \ if |z| \le 1
 
-                  uniform
+                  uniform 
 
                   .. math::
 
                       K(z) = |z| \ if |z| \le 1
 
-                  quadratic
+                  quadratic 
 
                   .. math::
 
@@ -681,7 +652,7 @@ def kernelW_from_shapefile(shapefile, k=2, function='triangular', idVariable=Non
                   .. math::
 
                       K(z) = (15/16)(1-z^2)^2 \ if |z| \le 1
-
+                 
                   bisquare
 
                   .. math::
@@ -718,31 +689,20 @@ def kernelW_from_shapefile(shapefile, k=2, function='triangular', idVariable=Non
     array([[ 0.75333961],
            [ 0.75333961],
            [ 0.75333961]])
-
-
-    Notes
-    -----
-    Supports polygon or point shapefiles. For polygon shapefiles, distance is
-    based on polygon centroids. Distances are defined using coordinates in
-    shapefile which are assumed to be projected and not geographical
-    coordinates.
-
-
     """
     points = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         points = pysal.cg.KDTree(points, distance_metric='Arc', radius=radius)
     if idVariable:
-        ids = get_ids(shapefile, idVariable)
-        return Kernel(points, function=function, k=k, ids=ids, fixed=fixed)
-    return kernelW(points, k=k, function=function, fixed=fixed)
-
+        ids = get_ids(shapefile,idVariable)
+        return Kernel(points,function=function,k=k,ids=ids,fixed=fixed)
+    return kernelW(points,k=k,function=function,fixed=fixed)
 
 def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius=None):
     """
     Kernel weights with adaptive bandwidths
 
-
+ 
     Parameters
     ----------
 
@@ -750,7 +710,7 @@ def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius
                   n observations on k characteristics used to measure
                   distances between the n objects
     bandwidths  : float or array-like (optional)
-                  the bandwidth :math:`h_i` for the kernel.
+                  the bandwidth :math:`h_i` for the kernel. 
                   if no bandwidth is specified k is used to determine the
                   adaptive bandwidth
     k           : int
@@ -760,25 +720,25 @@ def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius
                   distances (the distance to the kth nearest neighbor for each
                   observation).  For adaptive bandwidths, :math:`h_i=dknn_i`
     function    : string {'triangular','uniform','quadratic','quartic','gaussian'}
-                  kernel function defined as follows with
+                  kernel function defined as follows with 
 
                   .. math::
 
                       z_{i,j} = d_{i,j}/h_i
 
-                  triangular
+                  triangular 
 
                   .. math::
 
                       K(z) = (1 - |z|) \ if |z| \le 1
 
-                  uniform
+                  uniform 
 
                   .. math::
 
                       K(z) = |z| \ if |z| \le 1
 
-                  quadratic
+                  quadratic 
 
                   .. math::
 
@@ -789,7 +749,7 @@ def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius
                   .. math::
 
                       K(z) = (15/16)(1-z^2)^2 \ if |z| \le 1
-
+                 
                   gaussian
 
                   .. math::
@@ -826,7 +786,7 @@ def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius
            [ 14.5],
            [ 25. ]])
 
-    Endogenous adaptive bandwidths
+    Endogenous adaptive bandwidths 
 
     >>> kwea=adaptive_kernelW(points)
     >>> kwea.weights[0]
@@ -854,23 +814,22 @@ def adaptive_kernelW(points, bandwidths=None, k=2, function='triangular', radius
            [ 14.14213704],
            [ 18.02775818]])
     """
-    if radius is not None:
+    if radius != None:
         points = pysal.cg.KDTree(points, distance_metric='Arc', radius=radius)
-    return Kernel(points, bandwidth=bandwidths, fixed=False, k=k, function=function)
+    return Kernel(points, bandwidth=bandwidths,fixed=False, k=k, function=function)
 
-
-def adaptive_kernelW_from_shapefile(shapefile, bandwidths=None, k=2, function='triangular',
+def adaptive_kernelW_from_shapefile(shapefile, bandwidths=None, k=2, function='triangular', 
                                     idVariable=None, radius=None):
     """
     Kernel weights with adaptive bandwidths
-
+ 
     Parameters
     ----------
 
     shapefile   : string
                   shapefile name with shp suffix
     bandwidths  : float or array-like (optional)
-                  the bandwidth :math:`h_i` for the kernel.
+                  the bandwidth :math:`h_i` for the kernel. 
                   if no bandwidth is specified k is used to determine the
                   adaptive bandwidth
     k           : int
@@ -880,25 +839,25 @@ def adaptive_kernelW_from_shapefile(shapefile, bandwidths=None, k=2, function='t
                   distances (the distance to the kth nearest neighbor for each
                   observation).  For adaptive bandwidths, :math:`h_i=dknn_i`
     function    : string {'triangular','uniform','quadratic','quartic','gaussian'}
-                  kernel function defined as follows with
+                  kernel function defined as follows with 
 
                   .. math::
 
                       z_{i,j} = d_{i,j}/h_i
 
-                  triangular
+                  triangular 
 
                   .. math::
 
                       K(z) = (1 - |z|) \ if |z| \le 1
 
-                  uniform
+                  uniform 
 
                   .. math::
 
                       K(z) = |z| \ if |z| \le 1
 
-                  quadratic
+                  quadratic 
 
                   .. math::
 
@@ -909,7 +868,7 @@ def adaptive_kernelW_from_shapefile(shapefile, bandwidths=None, k=2, function='t
                   .. math::
 
                       K(z) = (15/16)(1-z^2)^2 \ if |z| \le 1
-
+                 
                   gaussian
 
                   .. math::
@@ -936,40 +895,25 @@ def adaptive_kernelW_from_shapefile(shapefile, bandwidths=None, k=2, function='t
     array([[ 0.59871832],
            [ 0.59871832],
            [ 0.56095647]])
-
-    Notes
-    -----
-    Supports polygon or point shapefiles. For polygon shapefiles, distance is
-    based on polygon centroids. Distances are defined using coordinates in
-    shapefile which are assumed to be projected and not geographical
-    coordinates.
-
     """
     points = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         points = pysal.cg.KDTree(points, distance_metric='Arc', radius=radius)
     if idVariable:
         ids = get_ids(shapefile, idVariable)
-        return Kernel(points, bandwidth=bandwidths, fixed=False, k=k, function=function, ids=ids)
-    return adaptive_kernelW(points, bandwidths=bandwidths, k=k, function=function)
+        return Kernel(points,bandwidth=bandwidths,fixed=False,k=k,function=function,ids=ids)
+    return adaptive_kernelW(points,bandwidths=bandwidths,k=k,function=function)
 
-
-def min_threshold_dist_from_shapefile(shapefile, radius=None, p=2):
+def min_threshold_dist_from_shapefile(shapefile, radius=None):
     """
     Kernel weights with adaptive bandwidths
-
+ 
     Parameters
     ----------
 
-    shapefile  : string
-                 shapefile name with shp suffix
-    radius     : If supplied arc_distances will be calculated
-                 based on the given radius. p will be ignored.
-    p          : float
-                 Minkowski p-norm distance metric parameter:
-                 1<=p<=infinity
-                 2: Euclidean distance
-                 1: Manhattan distance
+    shapefile   : string
+                  shapefile name with shp suffix
+    radius     : If supplied arc_distances will be calculated based on the given radius.
 
     Returns
     -------
@@ -984,20 +928,11 @@ def min_threshold_dist_from_shapefile(shapefile, radius=None, p=2):
     0.61886415807685413
     >>> min_threshold_dist_from_shapefile(pysal.examples.get_path("stl_hom.shp"), pysal.cg.sphere.RADIUS_EARTH_MILES)
     31.846942936393717
-
-    Notes
-    -----
-    Supports polygon or point shapefiles. For polygon shapefiles, distance is
-    based on polygon centroids. Distances are defined using coordinates in
-    shapefile which are assumed to be projected and not geographical
-    coordinates.
-
     """
     points = get_points_array_from_shapefile(shapefile)
-    if radius is not None:
+    if radius != None:
         points = pysal.cg.KDTree(points, distance_metric='Arc', radius=radius)
-    return min_threshold_distance(points,p)
-
+    return min_threshold_distance(points)
 
 def build_lattice_shapefile(nrows, ncols, outFileName):
     """
@@ -1018,14 +953,20 @@ def build_lattice_shapefile(nrows, ncols, outFileName):
     None
     """
     if not outFileName.endswith('.shp'):
-        raise ValueError("outFileName must end with .shp")
-    o = pysal.open(outFileName, 'w')
+        raise ValueError, "outFileName must end with .shp"
+    o = pysal.open(outFileName,'w')
     for i in xrange(nrows):
         for j in xrange(ncols):
-            ll = i, j
-            ul = i, j + 1
-            ur = i + 1, j + 1
-            lr = i + 1, j
-            o.write(pysal.cg.Polygon([ll, ul, ur, lr, ll]))
+            ll = i,j
+            ul = i,j+1
+            ur = i+1,j+1
+            lr = i+1,j
+            o.write(pysal.cg.Polygon([ll,ul,ur,lr,ll]))
     o.close()
 
+def _test():
+    import doctest
+    doctest.testmod(verbose=False)
+
+if __name__ == "__main__":
+    _test()
