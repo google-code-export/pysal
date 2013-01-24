@@ -1,67 +1,41 @@
-"""
-setup.py for PySAL package.
-"""
+# coding: utf-8
 
-DOCLINES = __doc__.split("\n")
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup
 
 import sys
-import subprocess
-import re
 import shutil
 import os
 if sys.version_info[0] < 3:
     import __builtin__ as builtins
 else:
     import builtins
-#import distribute_setup
-#distribute_setup.use_setuptools()
-from distutils.core import setup 
-#from pysal.version import version
-#version = '1.3.x'
 
-CLASSIFIERS = """\
-Development Status :: 5 - Production/Stable
-Intended Audience :: Science/Research
-Intended Audience :: Developers
-Intended Audience :: Education
-License :: OSI Approved :: BSD License
-Programming Language :: C
-Programming Language :: Python
-Programming Language :: Python :: 3
-Topic :: Software Development
-Topic :: Scientific/Engineering
-Topic :: Scientific/Engineering :: GIS
-Operating System :: Microsoft :: Windows
-Operating System :: POSIX
-Operating System :: Unix
-Operating System :: MacOS
-"""
+from pysal.version import version as dversion
 
-NAME                = 'pysal'
-MAINTAINER          = "PySAL Developers"
-MAINTAINER_EMAIL    = "pysal-dev@googlegroups.com"
-DESCRIPTION         = DOCLINES[0]
-LONG_DESCRIPTION    = "\n".join(DOCLINES[2:])
-URL                 = "http://pysal.org"
-DOWNLOAD_URL        = 'http://code.google.com/p/pysal/downloads/list'
-LICENSE             = 'BSD'
-CLASSIFIERS         = filter(None, CLASSIFIERS.split('\n'))
-PLATFORMS           = ["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"]
-MAJOR               = 1
-MINOR               = 4
-MICRO               = 0
-ISRELEASED          = False
-VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
+with open('README.txt') as file:
+    long_description = file.read()
+
+MAJOR = 1
+MINOR = 4
+MICRO = 1
+ISRELEASED = False
+VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
 # update it when the contents of directories change.
-if os.path.exists('MANIFEST'): os.remove('MANIFEST')
+if os.path.exists('MANIFEST'):
+    os.remove('MANIFEST')
+
+
 def setup_package():
 
     # Perform 2to3 if needed
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0])) #get cwd
-    src_path = local_path 
+    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))  # get cwd
+    src_path = local_path
 
     if sys.version_info[0] == 3:
         src_path = os.path.join(local_path, 'build', 'py3k')
@@ -91,47 +65,35 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    # Rewrite the version file everytime
-    #write_version_py()
-    
     setup(
-        name = NAME,
-        description = DESCRIPTION,
-        long_description = "\n".join(DOCLINES[2:]),
-        maintainer = MAINTAINER,
-        maintainer_email = MAINTAINER_EMAIL,
-        url = URL,
-        download_url = DOWNLOAD_URL,
-        version = VERSION,
-        license = LICENSE,
-        classifiers = CLASSIFIERS,
-        packages = ['pysal', 
-            'pysal.cg',
-            'pysal.cg.tests',
-            'pysal.contrib', 
-            'pysal.contrib.weights_viewer', 
-            'pysal.core', 
-            'pysal.core.tests', 
-            'pysal.core.util', 
-            'pysal.core.util.tests', 
-            'pysal.core.IOHandlers', 
-            'pysal.esda', 
-            'pysal.esda.tests', 
-            'pysal.examples', 
-            'pysal.inequality',
-            'pysal.inequality.tests',
-            'pysal.spatial_dynamics',
-            'pysal.spatial_dynamics.tests',
-            'pysal.spreg',
-            'pysal.spreg.tests',
-            'pysal.region',
-            'pysal.region.tests',
-            'pysal.weights',
-            'pysal.weights.tests'],
-        package_data = {'pysal':['examples/*'] },
-        requires = ['scipy'],
-        )
-            
+        name='PySAL',
+        version=dversion,
+        description="A library of spatial analysis functions.",
+        long_description=long_description,
+        maintainer="PySAL Developers",
+        maintainer_email='pysal-dev@googlegroups.com',
+        url='http://pysal.org',
+        license='BSD',
+        test_suite='nose.collector',
+        tests_require=['nose'],
+        classifiers=[
+            'Development Status :: 5 - Production/Stable',
+            'Intended Audience :: Science/Research',
+            'Intended Audience :: Developers',
+            'Intended Audience :: Education',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: GIS',
+            'License :: OSI Approved :: BSD License',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2.5',
+            'Programming Language :: Python :: 2.6',
+            'Programming Language :: Python :: 2.7'
+        ],
+        packages=find_packages(),
+        package_data={'pysal': ['examples/*']},
+        requires=['scipy']
+    )
+
 
 if __name__ == '__main__':
     setup_package()
