@@ -1,0 +1,32 @@
+==PySAL News==
+
+2013-01-30 [http://code.google.com/p/pysal/wiki/Announce1_5 PySAL 1.5 Stable released]   [http://code.google.com/p/pysal/downloads/list (Downloads)]
+
+2012-10-24 [https://twitter.com/OGRS2012/status/261106998861504512 PySAL short course at OSGRS 2012]
+
+ 
+2012-09-18 [http://www.giscience.org/workshops.html PySAL short course at GIScience 2012]
+
+2012-07-31 [http://code.google.com/p/pysal/wiki/Announce1_4 PySAL 1.4 released]
+
+2012-07-30 [https://www.geodapress.com/workshops/spatial-regression#description Short course on PySAL for Spatial Regression] 
+ 
+
+2012-07-30 [https://www.amstat.org/meetings/jsm/2012/onlineprogram/AbstractDetails.cfm?abstractid=303498 PySAL presentation at Joint Statistical Meetings]
+
+ 
+2012-07-18 [http://www.youtube.com/watch?v=FN1nH4Fkd_Y PySAL at SciPy 2012]    
+
+2012-01-31 [http://code.google.com/p/pysal/downloads/list PySAL 1.3 released]
+
+2012-01-19 [http://groups.google.com/group/pysal-dev/browse_thread/thread/5979ad207c9116d9 PySAL 1.3 release code sprint on January 23]
+
+2011-08-04 [http://www.pythonanywhere.com/ PySAL now part of pythonanywhere]
+
+2011-07-31 [http://code.google.com/p/pysal/downloads/list PySAL 1.2 released]
+
+2011-01-31 [http://code.google.com/p/pysal/downloads/list PySAL 1.1 released]
+
+2011-01-03 [http://code.google.com/p/pysal/wiki/1_1_Code_Sprint PySAL 1.1 Code Sprint]
+
+2010-07-31 [http://code.google.com/p/pysal/downloads/list PySAL 1.0 released]
