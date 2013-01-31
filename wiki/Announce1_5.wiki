@@ -16,10 +16,10 @@ pysal.spreg apply to regime models (e.g. White, HAC and KP-HET). With the
 regimes, it is possible to estimate models that have:
 
  * Common or regime-specific error variance; Common or regime-specific
- * coefficients for all variables or for a selection of variabels Common
- * or regime-specific constant term Various refactoring to streamline
- * code base and improve long term maintainability
+ * Coefficients for all variables or for a selection of variables
+ * Common or regime-specific constant term
 
+ 
 ===FileIO===
 
   * support for kwt
